@@ -1,0 +1,1460 @@
+# Business Requirements Document (BRD)
+# NRI Personal Finance Management Application
+
+**Document Version:** 1.0  
+**Date:** January 31, 2026  
+**Project Code:** PFM-NRI-2026  
+**Business Analyst:** Senior BA, Accenture Financial Services  
+**Target Audience:** Technical Project Lead, Solution Architects, Development Team
+
+---
+
+## Executive Summary
+
+This document outlines the business requirements for developing a local-first, offline-capable personal finance management application for Non-Resident Indians (NRIs) managing investments and expenses across UAE and India jurisdictions. The application will serve as a comprehensive financial analysis tool, investment simulator, and expense tracker with advanced real estate portfolio management, goal-based financial planning, and multi-currency support.
+
+**Primary Objectives:**
+- Provide complete net worth visibility across geographies (UAE + India)
+- Enable sophisticated real estate investment analysis with exit planning
+- Track equity, mutual fund, and objective-based investments
+- Automate expense monitoring through document import (PDF/Excel)
+- Support inflation-adjusted goal planning for major life events
+- Operate primarily offline with optional cloud backup/sync
+
+---
+
+## Business Context
+
+### Target User Profile
+
+**Primary User:** NRI professionals living in UAE (Dubai) with active financial interests in both UAE and India
+
+**User Characteristics:**
+- Tech-savvy with automation experience (n8n, APIs, development)
+- Managing dual-country investments (UAE real estate, India mutual funds/stocks)
+- Planning long-term family goals (children education, marriages, retirement)
+- Privacy-conscious, preferring local data storage over cloud-mandatory solutions
+- Currently using Excel for financial tracking and projections[file:1]
+
+### Business Problem Statement
+
+Current solutions have critical limitations:
+1. **Fragmented tools:** Users must use separate apps for expenses, investments, real estate, and goal planning
+2. **No NRI-specific features:** Most apps don't handle dual-country portfolios with different tax regimes, currencies, and regulations
+3. **Limited real estate analysis:** Existing apps lack sophisticated deal analysis, exit planning, and scenario simulation
+4. **Privacy concerns:** Cloud-mandatory apps with bank-linking raise data sovereignty and security concerns
+5. **Inflexible goal planning:** Generic goal trackers don't account for inflation variance by goal type or multi-asset allocation strategies
+
+### Success Criteria
+
+**Quantitative Metrics:**
+- Complete migration from Excel-based tracking within 30 days of MVP launch
+- 100% of transactions imported successfully from PDF/Excel statements
+- Real estate exit scenario analysis completed in < 2 minutes per property
+- Goal planning projections generated in < 5 seconds with inflation adjustments
+- Zero data breaches or unauthorized access incidents
+
+**Qualitative Metrics:**
+- User reports improved financial decision confidence
+- Reduced time spent on manual financial tracking by 70%
+- Increased visibility into cross-border investment performance
+- Ability to simulate "what-if" scenarios for investment decisions
+
+---
+
+## Stakeholder Analysis
+
+\begin{table}
+\begin{tabular}{|l|l|l|}
+\hline
+Stakeholder & Role & Key Interests \\
+\hline
+End User & Primary User & Privacy, offline capability, comprehensive analysis \\
+Project Sponsor & Self-funded & Cost control, feature completeness, timeline \\
+Technical Lead & Implementation & Clear requirements, feasible architecture \\
+Security Officer & Data Protection & Encryption, secure storage, audit trails \\
+\hline
+\end{tabular}
+\caption{Stakeholder mapping and interests}
+\end{table}
+
+---
+
+## Functional Requirements
+
+### FR1: Net Worth Management
+
+#### FR1.1 Multi-Currency Asset Tracking
+
+**Requirement:** System shall track assets across multiple currencies (AED, INR) with user-defined base currency for reporting.
+
+**Business Rules:**
+- Support AED (UAE Dirham) and INR (Indian Rupee) as primary currencies
+- Allow manual FX rate entry per transaction or asset valuation
+- Provide toggle between AED-base and INR-base reporting views
+- Store historical FX rates for trend analysis
+
+**Asset Categories:**
+\begin{itemize}
+\item Cash and Bank Accounts (savings, current, fixed deposits)
+\item Real Estate (residential, commercial, land)
+\item Equity Investments (stocks, ETFs)
+\item Mutual Funds (equity, debt, hybrid)
+\item Fixed Income (bonds, PPF, NPS)
+\item Alternative Assets (gold, cryptocurrency - optional)
+\item Provident Funds (EPF, gratuity)
+\end{itemize}
+
+**Acceptance Criteria:**
+- User can add assets in any supported currency
+- Net worth dashboard displays total in chosen base currency
+- Historical net worth trend chart shows monthly/quarterly snapshots
+- Breakdown by asset class, geography (UAE/India), and liquidity tier
+
+#### FR1.2 Liability Tracking
+
+**Requirement:** System shall track all liabilities with amortization schedules and interest calculations.
+
+**Liability Types:**
+\begin{itemize}
+\item Home Loans (UAE/India with different interest calculation methods)
+\item Personal Loans
+\item Vehicle Loans
+\item Credit Cards (outstanding balances)
+\item Other Debts
+\end{itemize}
+
+**Amortization Features:**
+- EMI breakdown (principal vs interest per month)
+- Outstanding principal balance tracking
+- Prepayment impact simulation
+- Interest paid to date and projected total interest
+
+**Acceptance Criteria:**
+- EMI schedule auto-generated from loan parameters (amount, rate, tenure)
+- Manual adjustments supported for irregular payments
+- Net worth calculation reflects equity (asset value - outstanding loan)
+- Alert when credit utilization exceeds 30% threshold
+
+#### FR1.3 Net Worth Dashboard
+
+**Requirement:** Provide comprehensive net worth overview with drill-down capabilities.
+
+**Dashboard Components:**
+\begin{itemize}
+\item Total Net Worth (current date)
+\item Net Worth Trend (line chart, last 12/24/36 months)
+\item Asset Allocation Pie Chart (by category)
+\item Geography Split (UAE vs India)
+\item Liquidity Ladder (cash, liquid, semi-liquid, illiquid)
+\item Top 5 Assets by Value
+\item Total Debt and Debt-to-Asset Ratio
+\item Month-over-Month Change (\% and absolute)
+\end{itemize}
+
+**Acceptance Criteria:**
+- Dashboard loads within 2 seconds on mid-range Android device
+- All charts support tap-to-drill-down to detailed views
+- Comparison view between current month and any past month
+- Export capability to PDF for record-keeping
+
+---
+
+### FR2: Real Estate Investment Module
+
+#### FR2.1 Property Portfolio Management
+
+**Requirement:** System shall maintain detailed records for each property with complete lifecycle tracking.
+
+**Property Master Data:**
+\begin{itemize}
+\item Property Identification (name, address, type, geography)
+\item Purchase Details (date, price, currency, purchase costs)
+\item Ownership Structure (sole, joint, percentage)
+\item Property Characteristics (built-up area, bedrooms, amenities)
+\item Legal Details (title deed number, registration date, jurisdiction)
+\end{itemize}
+
+**Acceptance Criteria:**
+- Support unlimited properties across UAE and India
+- Photo attachment for property documentation (up to 10 per property)
+- Document storage for title deeds, agreements (PDF format)
+- Search and filter by location, type, purchase date, status
+
+#### FR2.2 Property Financial Tracking
+
+**Requirement:** Track all property-related income and expenses with P&L statement generation.
+
+**Income Streams:**
+\begin{itemize}
+\item Rental Income (monthly/annual, with occupancy tracking)
+\item Service Charge Recovery (if applicable)
+\item Parking Revenue
+\item Other Property Income
+\end{itemize}
+
+**Expense Categories:**
+\begin{itemize}
+\item Mortgage/EMI Payments
+\item Property Tax
+\item Maintenance and Repairs
+\item Community/Society Charges
+\item Insurance
+\item Property Management Fees
+\item Vacancy Costs
+\item Utilities (if owner-paid)
+\item Capital Improvements
+\end{itemize}
+
+**Acceptance Criteria:**
+- Monthly cashflow statement per property
+- Year-to-date and annual P&L reports
+- Occupancy rate calculation (rented days / total days)
+- Net Operating Income (NOI) and Cash-on-Cash Return metrics
+
+#### FR2.3 Real Estate Deal Analyzer (Simulator Mode)
+
+**Requirement:** Provide comprehensive investment analysis tool for evaluating new property opportunities or analyzing existing holdings.
+
+**Core Analysis Features:**
+
+**Input Parameters:**
+\begin{itemize}
+\item Property purchase price and associated costs
+\item Down payment amount and financing terms
+\item Expected rental income and growth rate
+\item Operating expenses and inflation rate
+\item Holding period and exit assumptions
+\item Tax implications (capital gains, rental income tax)
+\end{itemize}
+
+**Country-Specific Templates:**
+
+**UAE Template:**
+\begin{itemize}
+\item Dubai Land Department (DLD) transfer fee: 4\% of property value
+\item Mortgage registration fee: 0.25\% of loan amount
+\item Agency commission: 2\% of purchase price (buyer side)
+\item Service charges: AED X per sq ft annually
+\item No rental income tax
+\item No capital gains tax (as of 2026)
+\item Typical vacancy assumptions: 1-2 months per 2 years
+\end{itemize}
+
+**India Template:**
+\begin{itemize}
+\item Stamp duty: 5-7\% (state-specific, customizable)
+\item Registration charges: 1\% of property value
+\item Brokerage: 1-2\%
+\item Society maintenance: INR X per sq ft monthly
+\item Property tax: varies by municipal corporation
+\item Rental income tax: per Income Tax Act slab rates
+\item Capital gains tax: LTCG 20\% with indexation (> 2 years holding)
+\item STCG: per slab rates (< 2 years)
+\end{itemize}
+
+**Advanced Calculations:**
+\begin{itemize}
+\item Internal Rate of Return (IRR)
+\item Net Present Value (NPV) with user-defined discount rate
+\item Cash-on-Cash Return (annual cashflow / initial equity)
+\item Equity Multiple (total returns / initial equity)
+\item Capitalization Rate (NOI / property value)
+\item Debt Service Coverage Ratio (DSCR)
+\item Break-even Occupancy Rate
+\item Return on Investment (ROI) with and without leverage
+\end{itemize}
+
+**Scenario Analysis:**
+- Base Case: User-defined expected scenario
+- Bull Case: Optimistic assumptions (+15% rent growth, -10% expenses, higher exit price)
+- Bear Case: Conservative assumptions (-10% rent growth, +15% expenses, lower exit price)
+- Custom Scenarios: User-defined parameter adjustments
+
+**Acceptance Criteria:**
+- All metrics calculated accurately per financial formulas
+- Side-by-side comparison of up to 3 properties/scenarios
+- Sensitivity analysis: table showing IRR changes with rent/price variations
+- Graphical outputs: cashflow waterfall, equity buildup chart, cumulative returns
+
+#### FR2.4 Exit Planning & Rules Engine
+
+**Requirement:** Enable users to define exit triggers and simulate optimal exit timing.
+
+**Exit Rule Types:**
+
+\begin{table}
+\begin{tabular}{|l|p{8cm}|}
+\hline
+Rule Type & Description \\
+\hline
+Target IRR & Sell when cumulative IRR exceeds X\% \\
+Target Equity & Sell when equity position reaches Y amount \\
+Target Price & Sell when market value reaches Z \\
+Time-Based & Sell after N years from purchase \\
+Yield Floor & Sell if rent yield drops below threshold \\
+Cashflow Negative & Sell if property becomes cashflow negative for K months \\
+Market Multiple & Sell when property value reaches X times initial investment \\
+Debt Milestone & Sell when loan is paid down to Y\% of original \\
+\hline
+\end{tabular}
+\caption{Exit rule configuration options}
+\end{table}
+
+**Exit Rule Configuration:**
+- Multiple rules can be defined per property (OR logic: first trigger wins)
+- Rule priority ranking for conflict resolution
+- Notification alerts when rule thresholds are approaching (80% threshold met)
+- Historical simulation: "If rule was active, when would exit have occurred?"
+
+**Exit Cost Modeling:**
+- Brokerage fees (typically 2% in UAE, 1-2% in India)
+- Capital gains tax calculation
+- Outstanding mortgage payoff
+- Transaction costs (DLD/registration)
+- Holding costs during sale period
+- Net proceeds calculation
+
+**Exit Analysis Dashboard:**
+- Current status vs each defined rule
+- "Days to exit" projection based on trend analysis
+- Exit proceeds estimate (gross and net of taxes/costs)
+- Comparison of exit today vs exit in 1/2/3 years
+- Graphical timeline showing when each rule would trigger
+
+**Acceptance Criteria:**
+- Exit rules evaluated in real-time when property data updates
+- Push notification when exit rule triggers
+- Detailed exit analysis report exportable to PDF
+- What-if simulator: "What if I exit today vs in 2 years?"
+
+---
+
+### FR3: Investment Portfolio Management
+
+#### FR3.1 Equity (Stocks) Tracking
+
+**Requirement:** Track stock holdings across multiple exchanges (NSE, BSE, international) with performance analytics.
+
+**Stock Portfolio Features:**
+\begin{itemize}
+\item Transaction logging (buy, sell, dividend received, bonus, split)
+\item Holdings view with current quantity and average cost
+\item Realized gains/losses calculation
+\item Unrealized gains/losses (requires manual price updates or sync)
+\item Sector allocation and diversification analysis
+\item Dividend yield tracking
+\item XIRR calculation per stock
+\end{itemize}
+
+**Manual Price Update:**
+- User enters current market price per stock
+- Timestamp stored for price update
+- Price history maintained for trend analysis
+- Option to set price update reminders
+
+**Acceptance Criteria:**
+- Support for international stocks (NASDAQ, NYSE) with USD pricing
+- Corporate action handling (bonus, split, merger) with quantity adjustments
+- Tax lot tracking (FIFO, LIFO, specific identification) for capital gains
+- Portfolio performance vs benchmark (manual benchmark entry)
+
+#### FR3.2 Mutual Fund Tracking
+
+**Requirement:** Comprehensive mutual fund portfolio management with goal-mapping capability.
+
+**Mutual Fund Features:**
+\begin{itemize}
+\item Fund master data (name, AMC, category, risk profile)
+\item Transaction types: purchase, redemption, SIP, STP, SWP, dividend
+\item Folio number tracking (multiple folios per fund)
+\item Current value based on latest NAV (manual update)
+\item XIRR calculation per fund and across portfolio
+\item Asset allocation tracking (equity, debt, hybrid)
+\item Goal tagging (map funds to specific goals)
+\end{itemize}
+
+**India-Specific Compliance:**
+- KYC status tracking (CKYC, PAN, Aadhaar linkage)
+- NRE/NRO account mapping for NRI investments
+- Tax classification (ELSS, debt for tax implications)
+- Exit load and lock-in period tracking
+
+**Acceptance Criteria:**
+- SIP schedule management with auto-reminder before due date
+- Performance comparison across funds in same category
+- Asset allocation rebalancing recommendations
+- Capital gains tax estimation (LTCG, STCG) per Indian tax rules
+
+#### FR3.3 Fixed Income Instruments
+
+**Requirement:** Track fixed-income investments with maturity and interest tracking.
+
+**Instrument Types:**
+\begin{itemize}
+\item Public Provident Fund (PPF)
+\item National Pension System (NPS)
+\item Fixed Deposits (bank, corporate)
+\item Bonds (government, corporate, tax-free)
+\item Employee Provident Fund (EPF)
+\item Recurring Deposits
+\item Post Office Schemes
+\end{itemize}
+
+**Features:**
+- Interest rate and compounding frequency
+- Maturity date tracking with countdown
+- Interest accrued calculation
+- Premature withdrawal penalty modeling
+- Nomination details storage
+- Auto-rollover configuration
+
+**Acceptance Criteria:**
+- Maturity alerts 90/60/30 days before maturity
+- Interest income aggregation for tax reporting
+- Comparison of effective yields across instruments
+- Laddering strategy visualization (maturity timeline)
+
+---
+
+### FR4: Objective-Based Goal Planning
+
+#### FR4.1 Goal Definition & Configuration
+
+**Requirement:** Enable creation and management of life-event financial goals with detailed planning parameters.
+
+**Goal Types (Pre-configured Templates):**
+\begin{itemize}
+\item Children's Education (primary, secondary, undergraduate, postgraduate)
+\item Children's Marriage
+\item Home Purchase/Upgrade
+\item Retirement
+\item Vehicle Purchase
+\item Vacation/Travel
+\item Emergency Fund
+\item Custom Goals (user-defined)
+\end{itemize}
+
+**Goal Parameters:**
+
+\begin{table}
+\begin{tabular}{|l|p{8cm}|}
+\hline
+Parameter & Description \\
+\hline
+Goal Name & User-defined descriptive name \\
+Goal Type & Category selection from template list \\
+Target Amount & Required amount in today's money \\
+Target Date & When goal needs to be achieved \\
+Current Corpus & Already accumulated amount for this goal \\
+Inflation Rate & Goal-specific inflation (e.g., education inflation) \\
+Expected Return & Anticipated investment return rate \\
+Risk Profile & Conservative / Moderate / Aggressive \\
+Priority & High / Medium / Low for conflict resolution \\
+\hline
+\end{tabular}
+\caption{Goal configuration parameters}
+\end{table}
+
+**Acceptance Criteria:**
+- Unlimited goals can be created
+- Goals can be linked to specific investments (mutual funds, SIPs)
+- Parent-child goal relationships (e.g., Child 1 UG, Child 1 PG)
+- Goal templates with pre-filled inflation rates based on industry data
+
+#### FR4.2 Goal Projection & SIP Calculation
+
+**Requirement:** Calculate future value requirements and optimal contribution strategies with inflation and compounding.
+
+**Calculation Engine:**
+
+**Future Value Calculation:**
+$$
+FV = PV \times (1 + i)^n
+$$
+
+Where:
+- $FV$ = Future Value Required
+- $PV$ = Present Value (target amount in today's money)
+- $i$ = Inflation rate
+- $n$ = Number of years to goal
+
+**SIP Calculation (Monthly):**
+$$
+SIP = \frac{FV \times r}{(1 + r)^{n} - 1}
+$$
+
+Where:
+- $SIP$ = Required monthly SIP amount
+- $FV$ = Future value required
+- $r$ = Monthly expected return ($annual\_return / 12$)
+- $n$ = Number of months to goal
+
+**Existing Corpus Contribution:**
+$$
+Corpus_{future} = Corpus_{current} \times (1 + r)^n
+$$
+
+**Net SIP Required:**
+$$
+Net\_SIP = SIP - \frac{Corpus_{future}}{(1 + r)^{n}}
+$$
+
+**Scenario Projections:**
+- **Conservative:** Lower return rate (e.g., 8%), higher inflation
+- **Base:** Expected return rate (e.g., 12%), expected inflation
+- **Aggressive:** Higher return rate (e.g., 15%), lower inflation
+
+**Acceptance Criteria:**
+- SIP amount calculated and displayed for each scenario
+- Total investment amount vs maturity amount comparison
+- Probability assessment (based on historical asset class returns)
+- Year-by-year corpus buildup projection table
+
+#### FR4.3 Goal Progress Tracking
+
+**Requirement:** Monitor actual progress vs plan with variance analysis and course correction recommendations.
+
+**Tracking Metrics:**
+\begin{itemize}
+\item Current Corpus Value (linked investments + cash allocation)
+\item Target Corpus at This Date (per original plan)
+\item Achievement Percentage (current / target at date)
+\item On-Track Status: Ahead / On Track / Behind / Critical
+\item Shortfall Amount (if behind schedule)
+\item Revised SIP Required (to get back on track)
+\end{itemize}
+
+**Linked Investment Tracking:**
+- Map specific mutual fund folios to goals
+- Map specific SIPs to goals
+- Aggregate current value of all goal-linked investments
+- Track actual contributions vs planned contributions
+
+**Alerts & Recommendations:**
+- Monthly progress update notification
+- Alert when goal falls behind by >10%
+- Recommendation to increase SIP when shortfall detected
+- Celebration notification when goal achieved (100% funded)
+
+**Acceptance Criteria:**
+- Visual progress bars for each goal
+- Goal dashboard showing all goals status at glance
+- Drill-down view with detailed year-by-year projection vs actual
+- Export goal report for financial advisor review
+
+#### FR4.4 Multi-Goal Portfolio Optimization
+
+**Requirement:** Provide holistic view of all goals and optimize overall investment strategy.
+
+**Portfolio Features:**
+- Total monthly commitment across all goals
+- Cashflow timeline showing when goals mature
+- Conflict detection (insufficient income for all SIPs)
+- Priority-based allocation recommendations
+- Asset allocation view across all goal-linked investments
+
+**Optimization Scenarios:**
+- "What if I delay Goal X by 2 years?" impact analysis
+- "What if I increase income by 10%?" reallocation suggestion
+- Risk-adjusted goal ordering based on priority and timeline
+- Gap analysis: total monthly capacity vs required SIPs
+
+**Acceptance Criteria:**
+- Visual timeline chart showing all goals with funding status
+- Slider-based simulators for adjusting goal parameters
+- Recommendation engine suggesting rebalancing actions
+- Comprehensive family financial plan dashboard
+
+---
+
+### FR5: Expense Monitoring & Budgeting
+
+#### FR5.1 Expense Data Import
+
+**Requirement:** Import transactions from PDF bank statements and Excel files with intelligent parsing.
+
+**Supported Import Formats:**
+
+**PDF Bank Statements:**
+- UAE Banks: Emirates NBD, ADCB, Mashreq, FAB, ENBD, Dubai Islamic Bank, RAKBANK
+- India Banks: HDFC, ICICI, SBI, Axis, Kotak, IDFC First, Yes Bank
+- Credit Card Statements (PDF format)
+
+**Excel/CSV Files:**
+- Standard transaction export format (Date, Description, Amount, Balance columns)
+- Custom column mapping interface for non-standard formats
+- Support for multiple sheets within workbook
+
+**PDF Parsing Logic:**
+\begin{itemize}
+\item OCR-based text extraction from statement
+\item Pattern recognition for transaction tables
+\item Date format detection (DD/MM/YYYY, MM/DD/YYYY)
+\item Amount parsing with debit/credit classification
+\item Balance column validation for accuracy check
+\item Description cleaning (remove extra spaces, special chars)
+\end{itemize}
+
+**Excel Parsing:**
+- Auto-detect header row
+- Column mapping wizard (drag-drop or dropdown selection)
+- Date format auto-detection
+- Currency detection from amount formatting
+- Skip rows / footer detection
+
+**Duplicate Detection:**
+- Match on Date + Amount + Description (fuzzy matching 85% threshold)
+- Flag suspected duplicates for user review before import
+- Option to merge duplicates or keep separate
+
+**Acceptance Criteria:**
+- Successful parse rate >95% for supported bank formats
+- Import 500 transactions in <10 seconds
+- User can correct parsing errors before final import
+- Import history log with rollback capability
+
+#### FR5.2 Transaction Management & Categorization
+
+**Requirement:** Organize and categorize all transactions with flexible tagging and search capabilities.
+
+**Transaction Attributes:**
+\begin{itemize}
+\item Date (with time if available)
+\item Description (original + user-editable note)
+\item Amount and Currency
+\item Account (which bank account or credit card)
+\item Category (primary classification)
+\item Subcategory (optional detailed classification)
+\item Tags (multiple tags per transaction)
+\item Payment Method (cash, card, transfer, cheque)
+\item Vendor/Payee
+\item Attachment (receipt photo/PDF)
+\item Split Transaction (divide amount across categories)
+\end{itemize}
+
+**Category Hierarchy (Comprehensive List):**
+
+**Income Categories:**
+\begin{itemize}
+\item Salary (primary employment)
+\item Business Income
+\item Rental Income
+\item Investment Income (dividends, interest, capital gains)
+\item Freelance/Consulting
+\item Other Income
+\end{itemize}
+
+**Expense Categories:**
+
+\begin{table}
+\begin{tabular}{|l|l|}
+\hline
+Primary Category & Subcategories \\
+\hline
+Housing & Rent, Mortgage/EMI, Maintenance, Utilities, Insurance \\
+Transportation & Fuel, Public Transport, Vehicle Maintenance, Parking, Tolls \\
+Food & Groceries, Dining Out, Takeaway, Work Lunch \\
+Healthcare & Doctor Visits, Medicines, Health Insurance, Dental, Optical \\
+Education & School Fees, Tuition, Books, Courses, Training \\
+Personal Care & Salon, Spa, Gym, Clothing, Accessories \\
+Entertainment & Movies, Events, Hobbies, Subscriptions, Vacation \\
+Family & Children Expenses, Gifts, Celebrations, Support \\
+Insurance & Life, Health, Property, Vehicle (separate from premiums) \\
+Investments & SIP Payments, Stock Purchases, FD Deposits \\
+Loans & EMI Payments, Credit Card Payments \\
+Taxes & Income Tax, Property Tax, Other Taxes \\
+Transfers & Between Own Accounts, Family Support, Remittances \\
+Miscellaneous & Uncategorized, Donations, Fines \\
+\hline
+\end{tabular}
+\caption{Expense category structure}
+\end{table}
+
+**Auto-Categorization Rules:**
+- Rule-based matching: "If description contains 'PETROL' then category = Transportation > Fuel"
+- Merchant recognition database (common retailers pre-mapped)
+- Learning engine: remember user corrections and auto-apply to future similar transactions
+- Bulk categorization: select multiple and assign category
+
+**Acceptance Criteria:**
+- Auto-categorization accuracy >70% for imported transactions
+- Search transactions by any field (date range, category, amount range, keyword)
+- Advanced filters: multiple criteria combined (AND/OR logic)
+- Transaction split feature for mixed-category purchases (e.g., supermarket: groceries + household)
+
+#### FR5.3 Budget Planning & Monitoring
+
+**Requirement:** Create and monitor budgets with flexible time periods and variance tracking.
+
+**Budget Configuration:**
+
+**Budget Types:**
+\begin{itemize}
+\item Monthly Budget (most common)
+\item Annual Budget with monthly distribution
+\item Quarterly Budget
+\item Custom Period Budget
+\end{itemize}
+
+**Budget Structure:**
+- Budget per Category (and optionally subcategory)
+- Zero-Based Budgeting (allocate every dirham/rupee)
+- Envelope Method Support (virtual envelopes per category)
+- Rollover Settings (unused budget rolls to next month or lapses)
+
+**Budget Allocation Methods:**
+\begin{itemize}
+\item Fixed Amount: Same amount every period
+\item Percentage of Income: Budget = Income × X\%
+\item Historical Average: Based on last N months actual spending
+\item Manual Entry: User-defined amounts
+\end{itemize}
+
+**Monitoring & Alerts:**
+- Real-time budget utilization tracking
+- Visual indicators: Green (<70% used), Yellow (70-90%), Red (>90%), Over-budget
+- Predictive alerts: "At current pace, will exceed budget by X on date Y"
+- Mid-period check-in notifications (15th of month)
+
+**Budget Reports:**
+- Budget vs Actual comparison table
+- Variance analysis (absolute and percentage)
+- Trend analysis: compare current month vs last 3/6/12 months
+- Category-wise spending breakdown (pie chart)
+
+**Acceptance Criteria:**
+- Create monthly budget in <5 minutes using templates
+- Budget dashboard updates instantly after transaction categorization
+- Alerts delivered within 1 hour of exceeding threshold
+- Export budget performance report to PDF/Excel
+
+#### FR5.4 Cashflow Analysis & Forecasting
+
+**Requirement:** Analyze income vs expenses with future cashflow projection capabilities.
+
+**Cashflow Dashboard:**
+\begin{itemize}
+\item Monthly Income (actual)
+\item Monthly Expenses (actual)
+\item Net Cashflow (Income - Expenses)
+\item Savings Rate (\%)
+\item Fixed vs Variable Expenses Ratio
+\item Discretionary Spending Amount
+\item "Safe to Spend" Amount (Income - Fixed Costs - Planned Savings)
+\end{itemize}
+
+**Trend Analysis:**
+- 12-month rolling cashflow chart (income, expense, net)
+- Category-wise expense trends (identify growing categories)
+- Seasonal pattern detection (e.g., higher expenses in Dec)
+- Year-over-Year comparison
+
+**Cashflow Forecasting:**
+- Project next 3/6/12 months cashflow based on:
+  - Historical spending patterns
+  - Committed future expenses (known bills, EMIs)
+  - Planned investments (scheduled SIPs, premiums)
+  - Expected income (salary, rental income)
+- Scenario analysis: "What if income reduces by 20%?" impact
+
+**Safe to Spend Calculation (per Excel logic):**
+$$
+Safe\_to\_Spend = Income - Fixed\_Expenses - Rent - Goal\_SIPs - Emergency\_Allocation
+$$
+
+**Acceptance Criteria:**
+- Cashflow summary dashboard loads in <2 seconds
+- Forecast accuracy within 10% of actual (validated monthly)
+- Alert if projected cashflow negative in next 3 months
+- Integration with budget: show budget remaining as "safe to spend"
+
+---
+
+### FR6: Annual Financial Planning & Budgeting
+
+#### FR6.1 Yearly Budget Configuration
+
+**Requirement:** Create comprehensive annual financial plan with goal-linked allocations.
+
+**Annual Plan Components:**
+\begin{itemize}
+\item Expected Annual Income (salary, bonuses, investment income, rental)
+\item Fixed Expenses (rent, loan EMIs, insurance premiums, subscriptions)
+\item Variable Expense Budget (per category from FR5.3)
+\item Goal Contributions (total SIP commitments from FR4)
+\item Emergency Fund Allocation
+\item Tax Liability Estimate
+\item Expected Savings / Surplus
+\end{itemize}
+
+**Monthly Distribution:**
+- Income distribution (equal or month-specific for bonuses)
+- Expense smoothing (annual expenses like insurance prorated monthly)
+- Goal payment schedules (SIP dates, premium due dates)
+
+**Acceptance Criteria:**
+- Annual plan creation wizard with step-by-step guidance
+- Validation: Total allocations ≤ Total income (with warnings if tight)
+- Monthly breakdown view showing each month's planned cashflow
+- Year-at-glance dashboard comparing plan vs actual quarterly
+
+#### FR6.2 Year-End Review & Reporting
+
+**Requirement:** Generate comprehensive annual financial report with insights and recommendations.
+
+**Annual Report Sections:**
+\begin{itemize}
+\item Net Worth Change (start of year vs end of year)
+\item Total Income Received vs Planned
+\item Total Expenses vs Budget (with variance analysis)
+\item Savings Rate Achieved
+\item Investment Returns (portfolio performance)
+\item Goal Progress Summary (all goals status)
+\item Debt Reduction Summary
+\item Tax-Saving Investments (80C, 80D eligible amounts)
+\end{itemize}
+
+**Financial Health Score:**
+- Composite score (0-100) based on:
+  - Savings rate (target 30%+)
+  - Debt-to-income ratio (<40% healthy)
+  - Emergency fund adequacy (6 months expenses)
+  - Goal funding on-track percentage
+  - Investment diversification score
+
+**Recommendations for Next Year:**
+- Areas to reduce spending (categories exceeding budget consistently)
+- Debt payoff strategies (avalanche vs snowball)
+- Goal funding gaps requiring attention
+- Tax optimization opportunities
+
+**Acceptance Criteria:**
+- One-click annual report generation
+- Export to PDF with charts and tables
+- Shareable format for family review or advisor discussion
+- Historical comparison: compare last 3 years side-by-side
+
+---
+
+### FR7: Reporting & Analytics
+
+#### FR7.1 Standard Reports
+
+**Requirement:** Provide comprehensive pre-built reports covering all modules.
+
+**Report Catalog:**
+
+\begin{table}
+\begin{tabular}{|l|l|}
+\hline
+Report Name & Description \\
+\hline
+Net Worth Statement & Assets, liabilities, net worth with date comparison \\
+Investment Portfolio Summary & All investments with current value and returns \\
+Real Estate Performance & Property-wise P\&L, ROI, cashflow \\
+Goal Progress Report & All goals with funding status and projections \\
+Monthly Expense Report & Category-wise expenses with budget comparison \\
+Cashflow Statement & Income vs expenses for selected period \\
+Tax Summary Report & Tax-relevant transactions and estimates \\
+Transaction Register & Detailed transaction listing with filters \\
+Yearly Financial Summary & Annual performance across all modules \\
+\hline
+\end{tabular}
+\caption{Standard report types}
+\end{table}
+
+**Report Features:**
+- Date range selection (custom, MTD, QTD, YTD, last 12 months)
+- Filter by geography (UAE/India/All)
+- Filter by currency (AED/INR/Both with base conversion)
+- Comparison periods (current vs previous period)
+- Export formats: PDF (formatted), Excel (data), CSV (raw)
+
+**Acceptance Criteria:**
+- All reports accessible from unified Reports menu
+- Report generation time <5 seconds for 1 year data
+- PDF exports print-ready with proper pagination
+- Excel exports retain formulas for user analysis
+
+#### FR7.2 Data Visualization & Charts
+
+**Requirement:** Rich interactive charts for data exploration and insight discovery.
+
+**Chart Types:**
+\begin{itemize}
+\item Line Charts (trends over time)
+\item Bar Charts (category comparisons)
+\item Pie Charts (composition/allocation)
+\item Stacked Area Charts (portfolio evolution)
+\item Waterfall Charts (cashflow components)
+\item Heatmaps (spending patterns by month/category)
+\end{itemize}
+
+**Interactive Features:**
+- Tap data point to see details
+- Pinch to zoom timeline
+- Swipe to navigate time periods
+- Toggle series on/off in multi-line charts
+- Export chart as image (PNG)
+
+**Acceptance Criteria:**
+- All charts render smoothly at 60fps
+- Charts adapt to portrait/landscape orientation
+- Color-blind friendly palette support
+- Dark mode support for all visualizations
+
+#### FR7.3 Advanced Analytics & Insights
+
+**Requirement:** AI/rule-based insights to surface trends, anomalies, and opportunities.
+
+**Insight Categories:**
+
+**Spending Insights:**
+\begin{itemize}
+\item "Food expenses up 25\% this month vs avg"
+\item "Top 3 discretionary categories consuming 40\% of budget"
+\item "Unusual transaction detected: AED 5000 in Entertainment (avg is AED 800)"
+\end{itemize}
+
+**Investment Insights:**
+\begin{itemize}
+\item "Equity allocation at 75\%, consider rebalancing to target 65\%"
+\item "Real estate provides 18\% of net worth but generates 40\% of passive income"
+\item "Your diversification score is 6/10 - consider adding international equity"
+\end{itemize}
+
+**Goal Insights:**
+\begin{itemize}
+\item "Child 1 Education goal is 15\% behind schedule, increase SIP by AED 500"
+\item "Emergency fund fully funded - consider redirecting surplus to Retirement goal"
+\item "3 goals competing for same timeline, consider prioritizing"
+\end{itemize}
+
+**Cashflow Insights:**
+\begin{itemize}
+\item "Savings rate of 35\% exceeds target of 30\% - well done!"
+\item "Fixed expenses increased from 45\% to 52\% of income (new loan EMI)"
+\item "Projected surplus next quarter: AED 15,000 - opportunity to prepay loan"
+\end{itemize}
+
+**Acceptance Criteria:**
+- Insights refreshed daily (when app opened)
+- Maximum 5 insights displayed at once (prioritized by importance)
+- User can dismiss or mark "not relevant"
+- Insight history log for reference
+
+---
+
+## Non-Functional Requirements
+
+### NFR1: Performance
+
+**NFR1.1 Response Time:**
+- Dashboard load time: <2 seconds on mid-range Android device (Snapdragon 6 series)
+- Transaction search: <1 second for 10,000 transactions
+- Report generation: <5 seconds for 1 year of data
+- Import processing: 500 transactions in <10 seconds
+- Real estate scenario calculation: <2 seconds per scenario
+
+**NFR1.2 Scalability:**
+- Support minimum 50,000 transactions without performance degradation
+- Support 100 properties in real estate module
+- Support 200 investment holdings (stocks + mutual funds)
+- Support 50 active goals simultaneously
+- Database size optimization: max 500MB for 5 years of comprehensive data
+
+### NFR2: Security & Privacy
+
+**NFR2.1 Data Encryption:**
+- Database encryption: SQLCipher with AES-256 encryption[web:49][web:52]
+- Encryption key derived from user-provided master password using PBKDF2 with 10,000 iterations
+- EncryptedSharedPreferences for app configuration data[web:52]
+- File attachments encrypted individually with AES-256
+
+**NFR2.2 Authentication & Access Control:**
+- Master password required on app launch (mandatory)
+- Biometric authentication support (fingerprint, face unlock) as convenience option
+- Auto-lock after 5 minutes of inactivity (configurable)
+- Failed password attempt lockout: 5 attempts, then 15-minute cooldown
+- No password recovery mechanism (by design - privacy-first)
+
+**NFR2.3 Data Privacy:**
+- Zero cloud transmission by default (100% local storage)
+- No analytics or telemetry collection
+- No third-party SDKs requiring internet permissions
+- Optional backup to user-controlled Hostinger account (encrypted before upload)
+- Clear data deletion: secure erase with 3-pass overwrite
+
+**NFR2.4 Security Best Practices:**
+- Root detection with warning (app still functional but user notified of risks)[web:49]
+- Screenshot blocking for sensitive screens (optional, user-configurable)
+- Certificate pinning for optional API calls (FX rates, backup sync)[web:52]
+- Code obfuscation using R8/ProGuard[web:49]
+- No logging of sensitive data (amounts, account numbers) to Android logcat
+
+**NFR2.5 Compliance Considerations:**
+- GDPR principles: data minimization, purpose limitation, user control
+- No PII shared with third parties
+- User-initiated data export (full database dump)
+- "Right to be forgotten" via app uninstall + secure deletion option
+
+### NFR3: Usability & User Experience
+
+**NFR3.1 Interface Design:**
+- Material Design 3 guidelines for Android
+- Dark mode and light mode support (system-default or user override)
+- Responsive layouts for phones (5" to 7") and tablets (8" to 12")
+- Accessibility: minimum 4.5:1 contrast ratio, TalkBack support, large text mode
+- Consistent navigation: bottom nav bar or drawer for main sections
+
+**NFR3.2 Localization:**
+- English as primary language (MVP)
+- Currency formatting: AED (د.إ), INR (₹) with proper locale formatting
+- Date format: DD/MM/YYYY (preferred by user in Dubai), with system locale fallback
+- Number formatting: Indian numbering system (lakhs, crores) for INR amounts
+- Future: Hindi, Arabic support (post-MVP)
+
+**NFR3.3 User Assistance:**
+- In-app help text for complex features (real estate exit rules, goal calculations)
+- Tooltips on first use for key screens
+- Sample data mode: pre-populated demo data for exploration
+- Onboarding wizard for first-time setup (5-step guided tour)
+
+**NFR3.4 Error Handling:**
+- User-friendly error messages (avoid technical jargon)
+- Graceful degradation: if import fails partially, show successful rows + errors
+- Undo capability for destructive actions (delete transaction, delete property)
+- Validation feedback in real-time (red highlighting, inline error text)
+
+### NFR4: Reliability & Data Integrity
+
+**NFR4.1 Data Backup & Recovery:**
+- Automated local backup: daily snapshot to internal storage
+- Manual backup: export full database as encrypted file
+- Restore from backup: import encrypted file with password verification
+- Optional cloud backup to Hostinger (user-triggered, encrypted before upload)
+
+**NFR4.2 Data Validation:**
+- Input validation: prevent invalid dates, negative amounts (where inappropriate), null required fields
+- Referential integrity: cannot delete account with active transactions
+- Balance reconciliation: transaction sum should match account balance changes
+- Duplicate detection: warn before creating similar transactions/assets
+
+**NFR4.3 Crash Resilience:**
+- Transaction support: write operations are atomic (commit or rollback)
+- Crash recovery: auto-resume incomplete imports on next launch
+- Data corruption detection: checksum validation on database open
+- Graceful handling: catch all exceptions, log to file, allow user to continue
+
+### NFR5: Maintainability & Extensibility
+
+**NFR5.1 Architecture:**
+- Clean Architecture / MVVM pattern for separation of concerns
+- Modular structure: each FR module (Real Estate, Goals, Expenses) as separate feature module
+- Dependency injection: Hilt or Koin for testability
+- Repository pattern for data access abstraction
+
+**NFR5.2 Code Quality:**
+- Kotlin as primary language (modern, concise, null-safe)
+- Minimum 70% code coverage with unit tests
+- UI tests for critical flows (add transaction, create goal, import statement)
+- Static analysis: ktlint for formatting, detekt for code smells
+
+**NFR5.3 Technology Stack (Recommended):**
+
+\begin{table}
+\begin{tabular}{|l|l|}
+\hline
+Layer & Technology \\
+\hline
+Language & Kotlin \\
+UI Framework & Jetpack Compose (modern declarative UI) \\
+Database & Room + SQLCipher (encrypted SQLite) \\
+Dependency Injection & Hilt \\
+Async Operations & Kotlin Coroutines + Flow \\
+Navigation & Jetpack Navigation Compose \\
+Charts & MPAndroidChart or Vico \\
+PDF Parsing & Apache PDFBox or iText \\
+Excel Parsing & Apache POI or OpenCSV \\
+Image Loading & Coil \\
+Testing & JUnit, Mockk, Compose UI Test \\
+\hline
+\end{tabular}
+\caption{Recommended technology stack}
+\end{table}
+
+### NFR6: Platform & Compatibility
+
+**NFR6.1 Android Versions:**
+- Minimum SDK: Android 8.0 (API 26) for broad compatibility
+- Target SDK: Android 14 (API 34) for latest features and security
+- Support 95%+ of active Android devices
+
+**NFR6.2 Device Support:**
+- Phones: 5" to 7" screens (portrait primary, landscape supported)
+- Tablets: 8" to 12" screens (adaptive layouts, multi-pane where useful)
+- Performance tier: mid-range devices (Snapdragon 6xx, 4GB RAM) as baseline
+
+**NFR6.3 Storage Requirements:**
+- App size: <50MB initial install
+- Data storage: 100-500MB for typical 5-year usage
+- External storage: support for backup files and imports
+- SD card support: allow database relocation (user-initiated)
+
+---
+
+## Optional Features (Post-MVP / Phase 2)
+
+### Phase 2A: Advanced Automation
+- **Notification-based expense capture:** Parse transaction notifications from banking apps (requires notification listener permission)[web:44]
+- **Gmail API integration:** OAuth-based email parsing for statement import (online feature)[web:13]
+- **Recurring transaction templates:** Auto-create transactions for known recurring expenses (rent, subscriptions)
+- **Receipt OCR:** Camera-based receipt scanning with amount/merchant extraction
+
+### Phase 2B: Advanced Analytics
+- **Machine learning categorization:** TensorFlow Lite model for smarter auto-categorization
+- **Anomaly detection:** Statistical models to flag unusual spending or investment performance
+- **Predictive cashflow:** More sophisticated forecasting using time-series analysis
+- **What-if scenario engine:** Comprehensive life event simulator (job change, new child, relocation)
+
+### Phase 2C: Collaboration & Sharing
+- **Multi-user support:** Shared household accounts with role-based access (view-only, editor, admin)
+- **Financial advisor sharing:** Secure read-only export link for CA/financial planner review
+- **Cloud sync (optional):** End-to-end encrypted sync across user's multiple devices via Hostinger[web:46]
+
+### Phase 2D: Tax & Compliance
+- **Tax estimation engine:** Calculate estimated income tax liability for both UAE (corporate for business) and India (per IT Act)
+- **Form 16 / ITR assistant:** Help prepare India tax returns with investment proofs
+- **NRI compliance tracker:** FEMA compliance checklist, repatriation limits, NRE/NRO rules
+- **Audit trail:** Immutable log of all data changes for compliance purposes
+
+### Phase 2E: Enhanced Real Estate
+- **Market data integration:** Optional API for property price indices (Dubai DLD, India portals) for automated valuation updates
+- **Property comparison tool:** Side-by-side comparison of 5+ properties with scoring matrix
+- **Rental yield maps:** Heatmap view of properties by yield performance
+- **Loan refinancing calculator:** Analyze when to refinance mortgage based on interest rate changes
+
+### Phase 2F: Investment Enhancements
+- **Live market prices:** Optional integration with NSE/BSE APIs, Alpha Vantage for stock/MF NAVs (with daily sync)[web:44]
+- **Portfolio rebalancing:** Automated recommendations to maintain target asset allocation
+- **Dividend calendar:** Track all dividend payouts with projected annual income
+- **Alternative investments:** Support for gold, cryptocurrency, P2P lending tracking
+
+---
+
+## User Stories (Sample - High Priority)
+
+### Epic: Real Estate Investment Analysis
+
+**US-RE-001: Create Property Record**  
+**As a** property investor  
+**I want to** create a detailed record for each property I own  
+**So that** I can track all property details in one place  
+
+**Acceptance Criteria:**
+- Given I am on the Real Estate module
+- When I tap "Add Property" and fill in purchase price, location, date, loan details
+- Then the property is saved and appears in my portfolio list
+- And I can attach title deed photo and property images
+
+**Priority:** P0 (Must Have)
+
+**US-RE-002: Analyze New Property Deal**  
+**As an** NRI evaluating investment opportunities  
+**I want to** simulate a new property investment with UAE-specific costs  
+**So that** I can decide if the deal meets my return expectations  
+
+**Acceptance Criteria:**
+- Given I am in Deal Analyzer mode
+- When I select "UAE Template" and enter purchase price AED 1,200,000, down payment 30%, rent AED 75,000/year
+- Then the system calculates IRR, cash-on-cash return, and shows 10-year projection
+- And I can see DLD fees (4%), mortgage registration (0.25%), and agency costs (2%) factored in
+- And I can compare Base/Bull/Bear scenarios side-by-side
+
+**Priority:** P0 (Must Have)
+
+**US-RE-003: Define Exit Rules**  
+**As a** strategic property investor  
+**I want to** define when I should exit an investment  
+**So that** I receive alerts when optimal exit conditions are met  
+
+**Acceptance Criteria:**
+- Given I have a property in my portfolio
+- When I define exit rule "Sell when IRR > 15%"
+- Then the system monitors IRR quarterly and notifies me when condition is met
+- And I can see "days to exit" projection based on current trends
+
+**Priority:** P1 (Should Have)
+
+---
+
+### Epic: Goal-Based Financial Planning
+
+**US-GL-001: Create Child Education Goal**  
+**As a** parent planning for future  
+**I want to** create a goal for my child's higher education  
+**So that** I know how much to save each month  
+
+**Acceptance Criteria:**
+- Given I am in Goals module
+- When I create goal "Child 1 UG" with target date 2035, amount INR 50,00,000 (today's value), education inflation 10%
+- Then system calculates future value needed: INR 1.3 crore
+- And system suggests monthly SIP: INR 15,000 at 12% expected return
+- And I can see year-by-year corpus buildup projection
+
+**Priority:** P0 (Must Have)
+
+**US-GL-002: Track Goal Progress**  
+**As a** disciplined saver  
+**I want to** monitor if my goals are on track  
+**So that** I can adjust my contributions if needed  
+
+**Acceptance Criteria:**
+- Given I have active goals with linked SIP investments
+- When I view goal dashboard
+- Then I see each goal's current value, target value, and on-track status
+- And goals behind schedule are highlighted in red with recommended action
+
+**Priority:** P0 (Must Have)
+
+---
+
+### Epic: Expense Management
+
+**US-EX-001: Import Bank Statement PDF**  
+**As a** user wanting automated expense tracking  
+**I want to** import my bank statement PDF  
+**So that** all transactions are captured without manual entry  
+
+**Acceptance Criteria:**
+- Given I have downloaded Emirates NBD statement PDF to my phone
+- When I select "Import" > "PDF Statement" and choose the file
+- Then system parses all transactions (date, description, amount, balance)
+- And I can review parsed data before confirming import
+- And duplicate transactions are flagged for my review
+
+**Priority:** P0 (Must Have)
+
+**US-EX-002: Categorize Expenses**  
+**As a** budget-conscious user  
+**I want to** categorize all my expenses  
+**So that** I understand where my money is going  
+
+**Acceptance Criteria:**
+- Given I have imported 100 transactions
+- When I view uncategorized transactions
+- Then system suggests categories based on description (70%+ accuracy)
+- And I can bulk-select similar transactions and assign category once
+- And system remembers my corrections for future auto-categorization
+
+**Priority:** P0 (Must Have)
+
+**US-EX-003: Monitor Monthly Budget**  
+**As a** budget follower  
+**I want to** see real-time budget utilization  
+**So that** I can control spending before month-end  
+
+**Acceptance Criteria:**
+- Given I have set monthly budget AED 5,000 for Food category
+- When I view budget dashboard mid-month
+- Then I see "AED 3,200 spent (64%), AED 1,800 remaining"
+- And color indicator is Yellow (approaching limit)
+- And I receive notification when reaching 90% (AED 4,500)
+
+**Priority:** P0 (Must Have)
+
+---
+
+## Data Model (High-Level ERD)
+
+### Core Entities
+
+**Account**
+- account_id (PK)
+- account_name
+- account_type (bank, credit_card, cash, investment)
+- currency
+- opening_balance
+- current_balance
+- institution_name
+- account_number (encrypted)
+- geography (UAE/India)
+
+**Transaction**
+- transaction_id (PK)
+- account_id (FK)
+- transaction_date
+- description
+- amount
+- currency
+- transaction_type (debit/credit)
+- category_id (FK)
+- subcategory_id (FK)
+- payment_method
+- vendor
+- notes
+- attachment_path
+- is_reconciled
+
+**Category**
+- category_id (PK)
+- parent_category_id (FK, self-reference)
+- category_name
+- category_type (income/expense)
+- icon
+- sort_order
+
+**Property**
+- property_id (PK)
+- property_name
+- geography (UAE/India)
+- property_type (residential/commercial)
+- address
+- purchase_date
+- purchase_price
+- purchase_currency
+- area_sqft
+- current_value
+- valuation_date
+
+**PropertyLoan**
+- loan_id (PK)
+- property_id (FK)
+- loan_amount
+- interest_rate
+- tenure_months
+- emi_amount
+- start_date
+- outstanding_balance
+
+**PropertyTransaction**
+- property_transaction_id (PK)
+- property_id (FK)
+- transaction_date
+- transaction_type (income/expense)
+- category (rent, maintenance, tax, etc.)
+- amount
+- currency
+- description
+
+**PropertyExitRule**
+- exit_rule_id (PK)
+- property_id (FK)
+- rule_type (target_irr, target_equity, time_based, etc.)
+- threshold_value
+- is_active
+- priority
+
+**Investment**
+- investment_id (PK)
+- investment_type (stock, mutual_fund, ppf, fd, bond)
+- investment_name
+- symbol_isin
+- quantity
+- avg_cost
+- current_price
+- current_value
+- currency
+- geography
+
+**InvestmentTransaction**
+- investment_transaction_id (PK)
+- investment_id (FK)
+- transaction_date
+- transaction_type (buy, sell, dividend, bonus, split)
+- quantity
+- price
+- amount
+- currency
+
+**Goal**
+- goal_id (PK)
+- goal_name
+- goal_type (education, marriage, retirement, etc.)
+- target_amount
+- target_currency
+- target_date
+- inflation_rate
+- expected_return
+- risk_profile
+- priority
+- current_corpus
+
+**GoalInvestmentMapping**
+- mapping_id (PK)
+- goal_id (FK)
+- investment_id (FK)
+- allocation_percentage
+
+**Budget**
+- budget_id (PK)
+- budget_period (monthly, annual)
+- start_date
+- end_date
+- category_id (FK)
+- budgeted_amount
+- currency
+
+**NetWorthSnapshot**
+- snapshot_id (PK)
+- snapshot_date
+- total_assets
+- total_liabilities
+- net_worth
+- currency
+
+---
+
+## Integration Requirements
+
+### INT1: Hostinger Backend (Optional)
+
+**Purpose:** Cloud backup and optional data sync
+
+**Requirements:**
+- RESTful API hosted on Hostinger shared hosting (PHP/MySQL or Node.js)
+- Endpoints:
+  - `POST /backup` - Upload encrypted database file
+  - `GET /backup/latest` - Download latest backup
+  - `GET /backup/list` - List all backups with timestamps
+  - `DELETE /backup/{id}` - Delete specific backup
+- Authentication: API key per user (stored encrypted in app)
+- Encryption: Database encrypted client-side before upload (zero-knowledge)
+- Storage: User-specific folders, retention policy (keep 30 days, then weekly for 6 months)
+
+**Acceptance Criteria:**
+- Backup upload completes in <30 seconds for 10MB database
+- Restore download and decrypt completes in <45 seconds
+- All API calls use HTTPS with certificate pinning
+- Optional feature: user can disable completely for 100% offline mode
+
+### INT2: Exchange Rate Service (Optional)
+
+**Purpose:** Fetch latest FX rates for AED-INR conversions
+
+**Requirements:**
+- Integration with free API: exchangerate-api.com or similar
+- Fetch AED/INR rate once daily (when app opened with network)
+- Cache rate locally, fallback to last known rate if API unavailable
+- Manual rate entry always available as override
+
+**Acceptance Criteria:**
+- Rate fetch completes in <3 seconds
+- Graceful handling of API downtime (use cached rate)
+- User notification if rate is >7 days old
+
+---
+
+## Constraints & Assumptions
+
+### Constraints
+1. **Platform:** Android only (no iOS version in MVP)
+2. **Offline-first:** Core functionality must work without internet
+3. **No automatic bank sync:** No integration with bank APIs for auto-transaction fetch
+4. **Storage:** Limited to device storage capacity (no cloud-mandatory architecture)
+5. **Single user:** No multi-user or household sharing in MVP
+6. **Manual data entry:** User must import statements or enter transactions manually
+
+### Assumptions
+1. User has basic financial literacy (understands terms
