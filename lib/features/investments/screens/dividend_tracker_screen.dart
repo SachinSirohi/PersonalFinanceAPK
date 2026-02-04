@@ -32,27 +32,44 @@ class _DividendTrackerScreenState extends State<DividendTrackerScreen> {
   }
 
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
-    final dividends = await _repo!.getAllDividends();
-    final assets = await _repo!.getAllAssets();
-    
-    final yearDividends = dividends.where((d) => d.paymentDate.year == _selectedYear);
-    final totalYear = yearDividends.fold(0.0, (sum, d) => sum + d.amount);
-    final totalAll = dividends.fold(0.0, (sum, d) => sum + d.amount);
+    try {
+      final dividends = await _repo!.getAllDividends();
+      if (!mounted) return;
+      final assets = await _repo!.getAllAssets();
+      if (!mounted) return;
+      
+      final yearDividends = dividends.where((d) => d.paymentDate.year == _selectedYear);
+      final totalYear = yearDividends.fold(0.0, (sum, d) => sum + d.amount);
+      final totalAll = dividends.fold(0.0, (sum, d) => sum + d.amount);
 
-    setState(() {
-      _dividends = dividends;
-      _assets = assets;
-      _totalDividendsThisYear = totalYear;
-      _totalDividendsAllTime = totalAll;
-      _isLoading = false;
-    });
+      if (!mounted) return;
+      setState(() {
+        _dividends = dividends;
+        _assets = assets;
+        _totalDividendsThisYear = totalYear;
+        _totalDividendsAllTime = totalAll;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override

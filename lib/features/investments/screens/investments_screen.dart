@@ -44,32 +44,49 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> with SingleTicker
   }
   
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
   
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
-    final allAssets = await _repo!.getAllAssets();
-    final stocks = allAssets.where((a) => a.type == 'stocks').toList();
-    final mfs = allAssets.where((a) => a.type == 'mutual_funds').toList();
-    final fds = allAssets.where((a) => a.type == 'fixed_deposit').toList();
-    final retirement = allAssets.where((a) => ['ppf', 'nps', 'epf'].contains(a.type)).toList();
-    
-    final allInvestments = [...stocks, ...mfs, ...fds, ...retirement];
-    final total = allInvestments.fold(0.0, (sum, a) => sum + a.currentValue);
-    final purchase = allInvestments.fold(0.0, (sum, a) => sum + a.purchaseValue);
-    
-    setState(() {
-      _stocks = stocks;
-      _mutualFunds = mfs;
-      _fixedDeposits = fds;
-      _retirement = retirement;
-      _totalValue = total;
-      _totalGain = total - purchase;
-      _isLoading = false;
-    });
+    try {
+      final allAssets = await _repo!.getAllAssets();
+      if (!mounted) return;
+      
+      final stocks = allAssets.where((a) => a.type == 'stocks').toList();
+      final mfs = allAssets.where((a) => a.type == 'mutual_funds').toList();
+      final fds = allAssets.where((a) => a.type == 'fixed_deposit').toList();
+      final retirement = allAssets.where((a) => ['ppf', 'nps', 'epf'].contains(a.type)).toList();
+      
+      final allInvestments = [...stocks, ...mfs, ...fds, ...retirement];
+      final total = allInvestments.fold(0.0, (sum, a) => sum + a.currentValue);
+      final purchase = allInvestments.fold(0.0, (sum, a) => sum + a.purchaseValue);
+      
+      if (!mounted) return;
+      setState(() {
+        _stocks = stocks;
+        _mutualFunds = mfs;
+        _fixedDeposits = fds;
+        _retirement = retirement;
+        _totalValue = total;
+        _totalGain = total - purchase;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override

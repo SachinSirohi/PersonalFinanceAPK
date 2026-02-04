@@ -80,7 +80,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
           child: const Icon(CupertinoIcons.add, color: Colors.white, size: 28),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: _buildBottomNav(isDark),
     );
   }

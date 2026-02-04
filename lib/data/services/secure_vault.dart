@@ -70,10 +70,47 @@ class SecureVault {
     await _storage.write(key: _onboardingComplete, value: complete.toString());
   }
   
-  /// Check if onboarding is complete
+  // Check onboarding completion
   static Future<bool> isOnboardingComplete() async {
-    final value = await _storage.read(key: _onboardingComplete);
-    return value == 'true';
+    final currency = await _storage.read(key: _baseCurrency);
+    final apiKey = await _storage.read(key: _geminiApiKey);
+    return currency != null && apiKey != null;
+  }
+  
+  // Email configuration storage (IMAP)
+  static Future<void> setEmailCredentials(String email, String appPassword, String provider) async {
+    await _storage.write(key: 'email_address', value: email);
+    await _storage.write(key: 'email_app_password', value: appPassword);
+    await _storage.write(key: 'email_provider', value: provider);
+  }
+  
+  static Future<Map<String, String?>> getEmailCredentials() async {
+    return {
+      'email': await _storage.read(key: 'email_address'),
+      'password': await _storage.read(key: 'email_app_password'),
+      'provider': await _storage.read(key: 'email_provider'),
+    };
+  }
+  
+  static Future<void> clearEmailCredentials() async {
+    await _storage.delete(key: 'email_address');
+    await _storage.delete(key: 'email_app_password');
+    await _storage.delete(key: 'email_provider');
+  }
+  
+  // Individual getters for IMAP service
+  static Future<String?> getGmailEmail() async {
+    return await _storage.read(key: 'email_address');
+  }
+  
+  static Future<String?> getGmailPassword() async {
+    return await _storage.read(key: 'email_app_password');
+  }
+  
+  static Future<bool> hasEmailCredentials() async {
+    final email = await _storage.read(key: 'email_address');
+    final password = await _storage.read(key: 'email_app_password');
+    return email != null && email.isNotEmpty && password != null && password.isNotEmpty;
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

@@ -11,6 +11,16 @@ import '../database/database.dart';
 class GmailService {
   static const _scopes = [gmail.GmailApi.gmailReadonlyScope];
   
+  // Singleton instance
+  static GmailService? _instance;
+  static GmailService get instance {
+    _instance ??= GmailService._();
+    return _instance!;
+  }
+  
+  // Private constructor
+  GmailService._();
+  
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
   
@@ -38,28 +48,47 @@ class GmailService {
     'Kotak': ['statements@kotak.com', 'no-reply@kotak.com'],
   };
   
+  // Static methods for easy access
+  static Future<GoogleSignInAccount?> signIn() async {
+    return await instance._signIn();
+  }
+  
+  static Future<void> signOut() async {
+    await instance._signOut();
+  }
+  
+  static Future<bool> isSignedIn() async {
+    return instance._currentUser != null || await instance._googleSignIn.isSignedIn();
+  }
+  
+  static Future<String?> getSignedInEmail() async {
+    if (instance._currentUser != null) return instance._currentUser!.email;
+    await instance.tryRestoreSession();
+    return instance._currentUser?.email;
+  }
+  
   /// Check if user is signed in
   bool get isSignedIn => _currentUser != null;
   
   /// Get current user's email
   String? get userEmail => _currentUser?.email;
   
-  /// Sign in with Google
-  Future<bool> signIn() async {
+  /// Sign in with Google (private instance method)
+  Future<GoogleSignInAccount?> _signIn() async {
     try {
       _currentUser = await _googleSignIn.signIn();
-      if (_currentUser == null) return false;
-      
-      await _initializeGmailApi();
-      return true;
+      if (_currentUser != null) {
+        await _initializeGmailApi();
+      }
+      return _currentUser;
     } catch (e) {
       print('Gmail sign-in error: $e');
-      return false;
+      return null;
     }
   }
   
-  /// Sign out
-  Future<void> signOut() async {
+  /// Sign out (private instance method)
+  Future<void> _signOut() async {
     await _googleSignIn.signOut();
     _currentUser = null;
     _gmailApi = null;

@@ -28,21 +28,37 @@ class _AssetsScreenState extends State<AssetsScreen> {
   }
   
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
   
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
-    final assets = await _repo!.getAllAssets();
-    final total = assets.fold(0.0, (sum, a) => sum + a.currentValue);
-    
-    setState(() {
-      _assets = assets;
-      _totalValue = total;
-      _isLoading = false;
-    });
+    try {
+      final assets = await _repo!.getAllAssets();
+      if (!mounted) return;
+      final total = assets.fold(0.0, (sum, a) => sum + a.currentValue);
+      
+      if (!mounted) return;
+      setState(() {
+        _assets = assets;
+        _totalValue = total;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override

@@ -28,21 +28,37 @@ class _AccountsScreenState extends State<AccountsScreen> {
   }
   
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
   
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
-    final accounts = await _repo!.getAllAccounts();
-    final total = accounts.fold(0.0, (sum, a) => sum + a.balance);
-    
-    setState(() {
-      _accounts = accounts;
-      _totalBalance = total;
-      _isLoading = false;
-    });
+    try {
+      final accounts = await _repo!.getAllAccounts();
+      if (!mounted) return;
+      final total = accounts.fold(0.0, (sum, a) => sum + a.balance);
+      
+      if (!mounted) return;
+      setState(() {
+        _accounts = accounts;
+        _totalBalance = total;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override

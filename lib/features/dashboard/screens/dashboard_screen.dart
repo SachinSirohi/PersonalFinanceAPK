@@ -8,6 +8,11 @@ import '../../settings/screens/statement_automation_screen.dart';
 import '../../goals/screens/goals_screen.dart';
 import '../../reports/screens/reports_screen.dart';
 import '../../investments/screens/investments_screen.dart';
+import '../../../data/database/database.dart';
+import '../../../data/repositories/app_repository.dart';
+import '../../../data/services/insights_service.dart';
+import '../widgets/insight_carousel.dart';
+import '../../ai_chat/screens/ai_chat_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -26,6 +31,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final double _emergencyTarget = 60000;
   final double _monthlySpending = 15000;
   final double _monthlyBudget = 20000;
+  
+  AppRepository? _repo;
+  InsightsService? _insightsService;
+  List<FinancialInsight> _activeInsights = [];
+  bool _isLoadingInsights = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+  
+  Future<void> _initializeData() async {
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      _insightsService = InsightsService(_repo!);
+      await _refreshInsights();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingInsights = false);
+      }
+    }
+  }
+  
+  Future<void> _refreshInsights() async {
+    try {
+      await _insightsService!.generateInsights();
+      final insights = await _repo!.getActiveInsights();
+      if (mounted) {
+        setState(() {
+          _activeInsights = insights;
+          _isLoadingInsights = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingInsights = false);
+      }
+    }
+  }
+
+  Future<void> _dismissInsight(String id) async {
+    await _repo!.dismissInsight(id);
+    _refreshInsights();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,43 +147,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
           
           // Content
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Net Worth Card
-                  _buildNetWorthCard(),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Emergency Fund & Sync Status
-                  Row(
+            child: Column(
+              children: [
+                if (_activeInsights.isNotEmpty)
+                  InsightCarousel(
+                    insights: _activeInsights,
+                    onDismiss: _dismissInsight,
+                  ).animate().fade(duration: 500.ms).slideY(begin: -0.1, end: 0),
+                
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                  child: Column(
                     children: [
-                      Expanded(child: _buildEmergencyFundCard()),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildSyncStatusCard()),
+                      // Net Worth Card
+                      _buildNetWorthCard(),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Emergency Fund & Sync Status
+                      Row(
+                        children: [
+                          Expanded(child: _buildEmergencyFundCard()),
+                          const SizedBox(width: 12),
+                          Expanded(child: _buildSyncStatusCard()),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Budget Overview
+                      _buildBudgetCard(),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // AI Chat Card
+                      _buildAiChatCard(),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Quick Actions
+                      _buildQuickActions(),
+                      
+                      const SizedBox(height: 100), // Bottom padding for nav bar
                     ],
                   ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Budget Overview
-                  _buildBudgetCard(),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // AI Chat Card
-                  _buildAiChatCard(),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Quick Actions
-                  _buildQuickActions(),
-                  
-                  const SizedBox(height: 100), // Bottom padding for nav bar
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
@@ -150,7 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: const Color(0xFFCFB53B),
         child: const Icon(CupertinoIcons.add, color: Color(0xFF0A1628)),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -561,7 +621,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
-        // TODO: Open AI chat
+        Navigator.push(
+          context,
+          CupertinoPageRoute(builder: (context) => const AiChatScreen()),
+        );
       },
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -653,6 +716,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             final action = entry.value;
             return Expanded(
               child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () {
                   HapticFeedback.lightImpact();
                   if (action.$1 == 'Statements') {
@@ -737,8 +801,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildNavItem(IconData icon, String label, bool isActive) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         HapticFeedback.selectionClick();
+        // Navigate based on label
+        if (label == 'Accounts') {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const InvestmentsScreen()));
+        } else if (label == 'Stats') {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
+        } else if (label == 'Settings') {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const StatementAutomationScreen()));
+        }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,

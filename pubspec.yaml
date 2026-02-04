@@ -42,7 +42,8 @@ dependencies:
   # File Handling & PDF
   file_picker: ^8.0.7
   path_provider: ^2.1.4
-  syncfusion_flutter_pdf: ^25.2.7
+  syncfusion_flutter_pdf: ^32.1.25
+  share_plus: ^10.0.0
   
   # Secure Storage
   flutter_secure_storage: ^9.2.2
@@ -76,6 +77,8 @@ dependencies:
   
   # Local Notifications
   flutter_local_notifications: ^17.2.3
+  carousel_slider: ^5.1.1
+  enough_mail: ^2.1.7
 
 
 dev_dependencies:
@@ -88,6 +91,7 @@ dev_dependencies:
   drift_dev: ^2.18.0
   json_serializable: ^6.8.0
   riverpod_generator: ^2.4.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true

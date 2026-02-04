@@ -287,6 +287,37 @@ class RentalIncome extends Table {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// PROPERTY_EXIT_RULES TABLE (Exit Strategy Automation)
+// ═══════════════════════════════════════════════════════════════════════════
+class PropertyExitRules extends Table {
+  TextColumn get id => text()();
+  TextColumn get assetId => text().references(Assets, #id)();
+  TextColumn get ruleType => text()(); // irr_threshold, equity_threshold, profit_threshold, holding_period
+  RealColumn get thresholdValue => real()();
+  DateTimeColumn get lastCheckedAt => dateTime().nullable()();
+  BoolColumn get isTriggered => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FINANCIAL_INSIGHTS TABLE (Proactive Alerts)
+// ═══════════════════════════════════════════════════════════════════════════
+class FinancialInsights extends Table {
+  TextColumn get id => text()();
+  TextColumn get type => text()(); // spending_spike, goal_lag, allocation_drift, emergency_fund
+  TextColumn get message => text()();
+  TextColumn get severity => text()(); // info, warning, critical
+  DateTimeColumn get generatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDismissed => boolean().withDefault(const Constant(false))();
+  
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // DATABASE CLASS
 // ═══════════════════════════════════════════════════════════════════════════
 @DriftDatabase(tables: [
@@ -306,12 +337,14 @@ class RentalIncome extends Table {
   Dividends,
   PropertyExpenses,
   RentalIncome,
+  PropertyExitRules,
+  FinancialInsights,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
   
   @override
   MigrationStrategy get migration => MigrationStrategy(

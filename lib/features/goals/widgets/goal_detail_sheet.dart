@@ -154,6 +154,15 @@ class _GoalDetailSheetState extends State<GoalDetailSheet> {
         : 0.0;
     final isOnTrack = progressPercent >= 50 || _shortfall == 0;
     
+    // Calculate inflation-adjusted target (6% default inflation)
+    final daysLeft = widget.goal.targetDate.difference(DateTime.now()).inDays.clamp(1, 36500);
+    final yearsLeft = daysLeft / 365.0;
+    final inflationAdjustedTarget = FinancialCalculations.calculateInflationAdjustedGoal(
+      currentValue: widget.goal.targetAmount,
+      inflationRate: 0.06, // 6% inflation
+      years: yearsLeft.round().clamp(1, 50),
+    );
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -204,6 +213,30 @@ class _GoalDetailSheetState extends State<GoalDetailSheet> {
                 Text('Shortfall: ${_formatCurrency(_shortfall)}', style: GoogleFonts.inter(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
             ],
           ),
+          // Inflation-adjusted view
+          if (yearsLeft >= 1) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.trending_up, color: Colors.white70, size: 16),
+                      const SizedBox(width: 6),
+                      Text('Inflation Adjusted (6%)', style: GoogleFonts.inter(color: Colors.white70, fontSize: 11)),
+                    ],
+                  ),
+                  Text(_formatCurrency(inflationAdjustedTarget), style: GoogleFonts.poppins(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     ).animate().fadeIn().scale(begin: const Offset(0.95, 0.95));

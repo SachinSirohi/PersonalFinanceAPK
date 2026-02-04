@@ -17,8 +17,15 @@ void main() async {
     systemNavigationBarIconBrightness: Brightness.light,
   ));
   
-  // Check if onboarding is complete
-  final onboardingComplete = await SecureVault.isOnboardingComplete();
+  // Check if onboarding is complete (with error handling)
+  bool onboardingComplete = false;
+  try {
+    onboardingComplete = await SecureVault.isOnboardingComplete();
+  } catch (e) {
+    // If error checking onboarding, assume not complete
+    debugPrint('Error checking onboarding status: $e');
+    onboardingComplete = false;
+  }
   
   runApp(
     ProviderScope(

@@ -7404,6 +7404,767 @@ class RentalIncomeCompanion extends UpdateCompanion<RentalIncomeData> {
   }
 }
 
+class $PropertyExitRulesTable extends PropertyExitRules
+    with TableInfo<$PropertyExitRulesTable, PropertyExitRule> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PropertyExitRulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _assetIdMeta =
+      const VerificationMeta('assetId');
+  @override
+  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
+      'asset_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES assets (id)'));
+  static const VerificationMeta _ruleTypeMeta =
+      const VerificationMeta('ruleType');
+  @override
+  late final GeneratedColumn<String> ruleType = GeneratedColumn<String>(
+      'rule_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _thresholdValueMeta =
+      const VerificationMeta('thresholdValue');
+  @override
+  late final GeneratedColumn<double> thresholdValue = GeneratedColumn<double>(
+      'threshold_value', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _lastCheckedAtMeta =
+      const VerificationMeta('lastCheckedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastCheckedAt =
+      GeneratedColumn<DateTime>('last_checked_at', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _isTriggeredMeta =
+      const VerificationMeta('isTriggered');
+  @override
+  late final GeneratedColumn<bool> isTriggered = GeneratedColumn<bool>(
+      'is_triggered', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_triggered" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        assetId,
+        ruleType,
+        thresholdValue,
+        lastCheckedAt,
+        isTriggered,
+        createdAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'property_exit_rules';
+  @override
+  VerificationContext validateIntegrity(Insertable<PropertyExitRule> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('asset_id')) {
+      context.handle(_assetIdMeta,
+          assetId.isAcceptableOrUnknown(data['asset_id']!, _assetIdMeta));
+    } else if (isInserting) {
+      context.missing(_assetIdMeta);
+    }
+    if (data.containsKey('rule_type')) {
+      context.handle(_ruleTypeMeta,
+          ruleType.isAcceptableOrUnknown(data['rule_type']!, _ruleTypeMeta));
+    } else if (isInserting) {
+      context.missing(_ruleTypeMeta);
+    }
+    if (data.containsKey('threshold_value')) {
+      context.handle(
+          _thresholdValueMeta,
+          thresholdValue.isAcceptableOrUnknown(
+              data['threshold_value']!, _thresholdValueMeta));
+    } else if (isInserting) {
+      context.missing(_thresholdValueMeta);
+    }
+    if (data.containsKey('last_checked_at')) {
+      context.handle(
+          _lastCheckedAtMeta,
+          lastCheckedAt.isAcceptableOrUnknown(
+              data['last_checked_at']!, _lastCheckedAtMeta));
+    }
+    if (data.containsKey('is_triggered')) {
+      context.handle(
+          _isTriggeredMeta,
+          isTriggered.isAcceptableOrUnknown(
+              data['is_triggered']!, _isTriggeredMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PropertyExitRule map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PropertyExitRule(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      assetId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}asset_id'])!,
+      ruleType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}rule_type'])!,
+      thresholdValue: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}threshold_value'])!,
+      lastCheckedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_checked_at']),
+      isTriggered: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_triggered'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $PropertyExitRulesTable createAlias(String alias) {
+    return $PropertyExitRulesTable(attachedDatabase, alias);
+  }
+}
+
+class PropertyExitRule extends DataClass
+    implements Insertable<PropertyExitRule> {
+  final String id;
+  final String assetId;
+  final String ruleType;
+  final double thresholdValue;
+  final DateTime? lastCheckedAt;
+  final bool isTriggered;
+  final DateTime createdAt;
+  const PropertyExitRule(
+      {required this.id,
+      required this.assetId,
+      required this.ruleType,
+      required this.thresholdValue,
+      this.lastCheckedAt,
+      required this.isTriggered,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['asset_id'] = Variable<String>(assetId);
+    map['rule_type'] = Variable<String>(ruleType);
+    map['threshold_value'] = Variable<double>(thresholdValue);
+    if (!nullToAbsent || lastCheckedAt != null) {
+      map['last_checked_at'] = Variable<DateTime>(lastCheckedAt);
+    }
+    map['is_triggered'] = Variable<bool>(isTriggered);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  PropertyExitRulesCompanion toCompanion(bool nullToAbsent) {
+    return PropertyExitRulesCompanion(
+      id: Value(id),
+      assetId: Value(assetId),
+      ruleType: Value(ruleType),
+      thresholdValue: Value(thresholdValue),
+      lastCheckedAt: lastCheckedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastCheckedAt),
+      isTriggered: Value(isTriggered),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory PropertyExitRule.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PropertyExitRule(
+      id: serializer.fromJson<String>(json['id']),
+      assetId: serializer.fromJson<String>(json['assetId']),
+      ruleType: serializer.fromJson<String>(json['ruleType']),
+      thresholdValue: serializer.fromJson<double>(json['thresholdValue']),
+      lastCheckedAt: serializer.fromJson<DateTime?>(json['lastCheckedAt']),
+      isTriggered: serializer.fromJson<bool>(json['isTriggered']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'assetId': serializer.toJson<String>(assetId),
+      'ruleType': serializer.toJson<String>(ruleType),
+      'thresholdValue': serializer.toJson<double>(thresholdValue),
+      'lastCheckedAt': serializer.toJson<DateTime?>(lastCheckedAt),
+      'isTriggered': serializer.toJson<bool>(isTriggered),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  PropertyExitRule copyWith(
+          {String? id,
+          String? assetId,
+          String? ruleType,
+          double? thresholdValue,
+          Value<DateTime?> lastCheckedAt = const Value.absent(),
+          bool? isTriggered,
+          DateTime? createdAt}) =>
+      PropertyExitRule(
+        id: id ?? this.id,
+        assetId: assetId ?? this.assetId,
+        ruleType: ruleType ?? this.ruleType,
+        thresholdValue: thresholdValue ?? this.thresholdValue,
+        lastCheckedAt:
+            lastCheckedAt.present ? lastCheckedAt.value : this.lastCheckedAt,
+        isTriggered: isTriggered ?? this.isTriggered,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  PropertyExitRule copyWithCompanion(PropertyExitRulesCompanion data) {
+    return PropertyExitRule(
+      id: data.id.present ? data.id.value : this.id,
+      assetId: data.assetId.present ? data.assetId.value : this.assetId,
+      ruleType: data.ruleType.present ? data.ruleType.value : this.ruleType,
+      thresholdValue: data.thresholdValue.present
+          ? data.thresholdValue.value
+          : this.thresholdValue,
+      lastCheckedAt: data.lastCheckedAt.present
+          ? data.lastCheckedAt.value
+          : this.lastCheckedAt,
+      isTriggered:
+          data.isTriggered.present ? data.isTriggered.value : this.isTriggered,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PropertyExitRule(')
+          ..write('id: $id, ')
+          ..write('assetId: $assetId, ')
+          ..write('ruleType: $ruleType, ')
+          ..write('thresholdValue: $thresholdValue, ')
+          ..write('lastCheckedAt: $lastCheckedAt, ')
+          ..write('isTriggered: $isTriggered, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, assetId, ruleType, thresholdValue,
+      lastCheckedAt, isTriggered, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PropertyExitRule &&
+          other.id == this.id &&
+          other.assetId == this.assetId &&
+          other.ruleType == this.ruleType &&
+          other.thresholdValue == this.thresholdValue &&
+          other.lastCheckedAt == this.lastCheckedAt &&
+          other.isTriggered == this.isTriggered &&
+          other.createdAt == this.createdAt);
+}
+
+class PropertyExitRulesCompanion extends UpdateCompanion<PropertyExitRule> {
+  final Value<String> id;
+  final Value<String> assetId;
+  final Value<String> ruleType;
+  final Value<double> thresholdValue;
+  final Value<DateTime?> lastCheckedAt;
+  final Value<bool> isTriggered;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const PropertyExitRulesCompanion({
+    this.id = const Value.absent(),
+    this.assetId = const Value.absent(),
+    this.ruleType = const Value.absent(),
+    this.thresholdValue = const Value.absent(),
+    this.lastCheckedAt = const Value.absent(),
+    this.isTriggered = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PropertyExitRulesCompanion.insert({
+    required String id,
+    required String assetId,
+    required String ruleType,
+    required double thresholdValue,
+    this.lastCheckedAt = const Value.absent(),
+    this.isTriggered = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        assetId = Value(assetId),
+        ruleType = Value(ruleType),
+        thresholdValue = Value(thresholdValue);
+  static Insertable<PropertyExitRule> custom({
+    Expression<String>? id,
+    Expression<String>? assetId,
+    Expression<String>? ruleType,
+    Expression<double>? thresholdValue,
+    Expression<DateTime>? lastCheckedAt,
+    Expression<bool>? isTriggered,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (assetId != null) 'asset_id': assetId,
+      if (ruleType != null) 'rule_type': ruleType,
+      if (thresholdValue != null) 'threshold_value': thresholdValue,
+      if (lastCheckedAt != null) 'last_checked_at': lastCheckedAt,
+      if (isTriggered != null) 'is_triggered': isTriggered,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PropertyExitRulesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? assetId,
+      Value<String>? ruleType,
+      Value<double>? thresholdValue,
+      Value<DateTime?>? lastCheckedAt,
+      Value<bool>? isTriggered,
+      Value<DateTime>? createdAt,
+      Value<int>? rowid}) {
+    return PropertyExitRulesCompanion(
+      id: id ?? this.id,
+      assetId: assetId ?? this.assetId,
+      ruleType: ruleType ?? this.ruleType,
+      thresholdValue: thresholdValue ?? this.thresholdValue,
+      lastCheckedAt: lastCheckedAt ?? this.lastCheckedAt,
+      isTriggered: isTriggered ?? this.isTriggered,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (assetId.present) {
+      map['asset_id'] = Variable<String>(assetId.value);
+    }
+    if (ruleType.present) {
+      map['rule_type'] = Variable<String>(ruleType.value);
+    }
+    if (thresholdValue.present) {
+      map['threshold_value'] = Variable<double>(thresholdValue.value);
+    }
+    if (lastCheckedAt.present) {
+      map['last_checked_at'] = Variable<DateTime>(lastCheckedAt.value);
+    }
+    if (isTriggered.present) {
+      map['is_triggered'] = Variable<bool>(isTriggered.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PropertyExitRulesCompanion(')
+          ..write('id: $id, ')
+          ..write('assetId: $assetId, ')
+          ..write('ruleType: $ruleType, ')
+          ..write('thresholdValue: $thresholdValue, ')
+          ..write('lastCheckedAt: $lastCheckedAt, ')
+          ..write('isTriggered: $isTriggered, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FinancialInsightsTable extends FinancialInsights
+    with TableInfo<$FinancialInsightsTable, FinancialInsight> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FinancialInsightsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+      'type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _messageMeta =
+      const VerificationMeta('message');
+  @override
+  late final GeneratedColumn<String> message = GeneratedColumn<String>(
+      'message', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _severityMeta =
+      const VerificationMeta('severity');
+  @override
+  late final GeneratedColumn<String> severity = GeneratedColumn<String>(
+      'severity', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _generatedAtMeta =
+      const VerificationMeta('generatedAt');
+  @override
+  late final GeneratedColumn<DateTime> generatedAt = GeneratedColumn<DateTime>(
+      'generated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _isDismissedMeta =
+      const VerificationMeta('isDismissed');
+  @override
+  late final GeneratedColumn<bool> isDismissed = GeneratedColumn<bool>(
+      'is_dismissed', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_dismissed" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, type, message, severity, generatedAt, isDismissed];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'financial_insights';
+  @override
+  VerificationContext validateIntegrity(Insertable<FinancialInsight> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('message')) {
+      context.handle(_messageMeta,
+          message.isAcceptableOrUnknown(data['message']!, _messageMeta));
+    } else if (isInserting) {
+      context.missing(_messageMeta);
+    }
+    if (data.containsKey('severity')) {
+      context.handle(_severityMeta,
+          severity.isAcceptableOrUnknown(data['severity']!, _severityMeta));
+    } else if (isInserting) {
+      context.missing(_severityMeta);
+    }
+    if (data.containsKey('generated_at')) {
+      context.handle(
+          _generatedAtMeta,
+          generatedAt.isAcceptableOrUnknown(
+              data['generated_at']!, _generatedAtMeta));
+    }
+    if (data.containsKey('is_dismissed')) {
+      context.handle(
+          _isDismissedMeta,
+          isDismissed.isAcceptableOrUnknown(
+              data['is_dismissed']!, _isDismissedMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FinancialInsight map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FinancialInsight(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      type: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
+      message: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}message'])!,
+      severity: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}severity'])!,
+      generatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}generated_at'])!,
+      isDismissed: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_dismissed'])!,
+    );
+  }
+
+  @override
+  $FinancialInsightsTable createAlias(String alias) {
+    return $FinancialInsightsTable(attachedDatabase, alias);
+  }
+}
+
+class FinancialInsight extends DataClass
+    implements Insertable<FinancialInsight> {
+  final String id;
+  final String type;
+  final String message;
+  final String severity;
+  final DateTime generatedAt;
+  final bool isDismissed;
+  const FinancialInsight(
+      {required this.id,
+      required this.type,
+      required this.message,
+      required this.severity,
+      required this.generatedAt,
+      required this.isDismissed});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['type'] = Variable<String>(type);
+    map['message'] = Variable<String>(message);
+    map['severity'] = Variable<String>(severity);
+    map['generated_at'] = Variable<DateTime>(generatedAt);
+    map['is_dismissed'] = Variable<bool>(isDismissed);
+    return map;
+  }
+
+  FinancialInsightsCompanion toCompanion(bool nullToAbsent) {
+    return FinancialInsightsCompanion(
+      id: Value(id),
+      type: Value(type),
+      message: Value(message),
+      severity: Value(severity),
+      generatedAt: Value(generatedAt),
+      isDismissed: Value(isDismissed),
+    );
+  }
+
+  factory FinancialInsight.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FinancialInsight(
+      id: serializer.fromJson<String>(json['id']),
+      type: serializer.fromJson<String>(json['type']),
+      message: serializer.fromJson<String>(json['message']),
+      severity: serializer.fromJson<String>(json['severity']),
+      generatedAt: serializer.fromJson<DateTime>(json['generatedAt']),
+      isDismissed: serializer.fromJson<bool>(json['isDismissed']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'type': serializer.toJson<String>(type),
+      'message': serializer.toJson<String>(message),
+      'severity': serializer.toJson<String>(severity),
+      'generatedAt': serializer.toJson<DateTime>(generatedAt),
+      'isDismissed': serializer.toJson<bool>(isDismissed),
+    };
+  }
+
+  FinancialInsight copyWith(
+          {String? id,
+          String? type,
+          String? message,
+          String? severity,
+          DateTime? generatedAt,
+          bool? isDismissed}) =>
+      FinancialInsight(
+        id: id ?? this.id,
+        type: type ?? this.type,
+        message: message ?? this.message,
+        severity: severity ?? this.severity,
+        generatedAt: generatedAt ?? this.generatedAt,
+        isDismissed: isDismissed ?? this.isDismissed,
+      );
+  FinancialInsight copyWithCompanion(FinancialInsightsCompanion data) {
+    return FinancialInsight(
+      id: data.id.present ? data.id.value : this.id,
+      type: data.type.present ? data.type.value : this.type,
+      message: data.message.present ? data.message.value : this.message,
+      severity: data.severity.present ? data.severity.value : this.severity,
+      generatedAt:
+          data.generatedAt.present ? data.generatedAt.value : this.generatedAt,
+      isDismissed:
+          data.isDismissed.present ? data.isDismissed.value : this.isDismissed,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FinancialInsight(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('message: $message, ')
+          ..write('severity: $severity, ')
+          ..write('generatedAt: $generatedAt, ')
+          ..write('isDismissed: $isDismissed')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, type, message, severity, generatedAt, isDismissed);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FinancialInsight &&
+          other.id == this.id &&
+          other.type == this.type &&
+          other.message == this.message &&
+          other.severity == this.severity &&
+          other.generatedAt == this.generatedAt &&
+          other.isDismissed == this.isDismissed);
+}
+
+class FinancialInsightsCompanion extends UpdateCompanion<FinancialInsight> {
+  final Value<String> id;
+  final Value<String> type;
+  final Value<String> message;
+  final Value<String> severity;
+  final Value<DateTime> generatedAt;
+  final Value<bool> isDismissed;
+  final Value<int> rowid;
+  const FinancialInsightsCompanion({
+    this.id = const Value.absent(),
+    this.type = const Value.absent(),
+    this.message = const Value.absent(),
+    this.severity = const Value.absent(),
+    this.generatedAt = const Value.absent(),
+    this.isDismissed = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FinancialInsightsCompanion.insert({
+    required String id,
+    required String type,
+    required String message,
+    required String severity,
+    this.generatedAt = const Value.absent(),
+    this.isDismissed = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        type = Value(type),
+        message = Value(message),
+        severity = Value(severity);
+  static Insertable<FinancialInsight> custom({
+    Expression<String>? id,
+    Expression<String>? type,
+    Expression<String>? message,
+    Expression<String>? severity,
+    Expression<DateTime>? generatedAt,
+    Expression<bool>? isDismissed,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (type != null) 'type': type,
+      if (message != null) 'message': message,
+      if (severity != null) 'severity': severity,
+      if (generatedAt != null) 'generated_at': generatedAt,
+      if (isDismissed != null) 'is_dismissed': isDismissed,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FinancialInsightsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? type,
+      Value<String>? message,
+      Value<String>? severity,
+      Value<DateTime>? generatedAt,
+      Value<bool>? isDismissed,
+      Value<int>? rowid}) {
+    return FinancialInsightsCompanion(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      message: message ?? this.message,
+      severity: severity ?? this.severity,
+      generatedAt: generatedAt ?? this.generatedAt,
+      isDismissed: isDismissed ?? this.isDismissed,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (message.present) {
+      map['message'] = Variable<String>(message.value);
+    }
+    if (severity.present) {
+      map['severity'] = Variable<String>(severity.value);
+    }
+    if (generatedAt.present) {
+      map['generated_at'] = Variable<DateTime>(generatedAt.value);
+    }
+    if (isDismissed.present) {
+      map['is_dismissed'] = Variable<bool>(isDismissed.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FinancialInsightsCompanion(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('message: $message, ')
+          ..write('severity: $severity, ')
+          ..write('generatedAt: $generatedAt, ')
+          ..write('isDismissed: $isDismissed, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7426,6 +8187,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PropertyExpensesTable propertyExpenses =
       $PropertyExpensesTable(this);
   late final $RentalIncomeTable rentalIncome = $RentalIncomeTable(this);
+  late final $PropertyExitRulesTable propertyExitRules =
+      $PropertyExitRulesTable(this);
+  late final $FinancialInsightsTable financialInsights =
+      $FinancialInsightsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7446,7 +8211,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         sipRecords,
         dividends,
         propertyExpenses,
-        rentalIncome
+        rentalIncome,
+        propertyExitRules,
+        financialInsights
       ];
 }
 
@@ -9785,6 +10552,23 @@ final class $$AssetsTableReferences
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
+
+  static MultiTypedResultKey<$PropertyExitRulesTable, List<PropertyExitRule>>
+      _propertyExitRulesRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.propertyExitRules,
+              aliasName: $_aliasNameGenerator(
+                  db.assets.id, db.propertyExitRules.assetId));
+
+  $$PropertyExitRulesTableProcessedTableManager get propertyExitRulesRefs {
+    final manager =
+        $$PropertyExitRulesTableTableManager($_db, $_db.propertyExitRules)
+            .filter((f) => f.assetId.id($_item.id));
+
+    final cache =
+        $_typedResult.readTableOrNull(_propertyExitRulesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$AssetsTableFilterComposer
@@ -9967,6 +10751,27 @@ class $$AssetsTableFilterComposer
             $$RentalIncomeTableFilterComposer(
               $db: $db,
               $table: $db.rentalIncome,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> propertyExitRulesRefs(
+      Expression<bool> Function($$PropertyExitRulesTableFilterComposer f) f) {
+    final $$PropertyExitRulesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.propertyExitRules,
+        getReferencedColumn: (t) => t.assetId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PropertyExitRulesTableFilterComposer(
+              $db: $db,
+              $table: $db.propertyExitRules,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -10231,6 +11036,28 @@ class $$AssetsTableAnnotationComposer
             ));
     return f(composer);
   }
+
+  Expression<T> propertyExitRulesRefs<T extends Object>(
+      Expression<T> Function($$PropertyExitRulesTableAnnotationComposer a) f) {
+    final $$PropertyExitRulesTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.propertyExitRules,
+            getReferencedColumn: (t) => t.assetId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$PropertyExitRulesTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.propertyExitRules,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
 }
 
 class $$AssetsTableTableManager extends RootTableManager<
@@ -10251,7 +11078,8 @@ class $$AssetsTableTableManager extends RootTableManager<
         bool sipRecordsRefs,
         bool dividendsRefs,
         bool propertyExpensesRefs,
-        bool rentalIncomeRefs})> {
+        bool rentalIncomeRefs,
+        bool propertyExitRulesRefs})> {
   $$AssetsTableTableManager(_$AppDatabase db, $AssetsTable table)
       : super(TableManagerState(
           db: db,
@@ -10333,7 +11161,8 @@ class $$AssetsTableTableManager extends RootTableManager<
               sipRecordsRefs = false,
               dividendsRefs = false,
               propertyExpensesRefs = false,
-              rentalIncomeRefs = false}) {
+              rentalIncomeRefs = false,
+              propertyExitRulesRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
@@ -10342,7 +11171,8 @@ class $$AssetsTableTableManager extends RootTableManager<
                 if (sipRecordsRefs) db.sipRecords,
                 if (dividendsRefs) db.dividends,
                 if (propertyExpensesRefs) db.propertyExpenses,
-                if (rentalIncomeRefs) db.rentalIncome
+                if (rentalIncomeRefs) db.rentalIncome,
+                if (propertyExitRulesRefs) db.propertyExitRules
               ],
               addJoins: <
                   T extends TableManagerState<
@@ -10443,6 +11273,18 @@ class $$AssetsTableTableManager extends RootTableManager<
                         referencedItemsForCurrentItem: (item,
                                 referencedItems) =>
                             referencedItems.where((e) => e.assetId == item.id),
+                        typedResults: items),
+                  if (propertyExitRulesRefs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable: $$AssetsTableReferences
+                            ._propertyExitRulesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$AssetsTableReferences(db, table, p0)
+                                .propertyExitRulesRefs,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.assetId == item.id),
                         typedResults: items)
                 ];
               },
@@ -10469,7 +11311,8 @@ typedef $$AssetsTableProcessedTableManager = ProcessedTableManager<
         bool sipRecordsRefs,
         bool dividendsRefs,
         bool propertyExpensesRefs,
-        bool rentalIncomeRefs})>;
+        bool rentalIncomeRefs,
+        bool propertyExitRulesRefs})>;
 typedef $$GoalsTableCreateCompanionBuilder = GoalsCompanion Function({
   required String id,
   required String name,
@@ -14671,6 +15514,505 @@ typedef $$RentalIncomeTableProcessedTableManager = ProcessedTableManager<
     (RentalIncomeData, $$RentalIncomeTableReferences),
     RentalIncomeData,
     PrefetchHooks Function({bool assetId, bool currencyCode})>;
+typedef $$PropertyExitRulesTableCreateCompanionBuilder
+    = PropertyExitRulesCompanion Function({
+  required String id,
+  required String assetId,
+  required String ruleType,
+  required double thresholdValue,
+  Value<DateTime?> lastCheckedAt,
+  Value<bool> isTriggered,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
+typedef $$PropertyExitRulesTableUpdateCompanionBuilder
+    = PropertyExitRulesCompanion Function({
+  Value<String> id,
+  Value<String> assetId,
+  Value<String> ruleType,
+  Value<double> thresholdValue,
+  Value<DateTime?> lastCheckedAt,
+  Value<bool> isTriggered,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
+
+final class $$PropertyExitRulesTableReferences extends BaseReferences<
+    _$AppDatabase, $PropertyExitRulesTable, PropertyExitRule> {
+  $$PropertyExitRulesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $AssetsTable _assetIdTable(_$AppDatabase db) => db.assets.createAlias(
+      $_aliasNameGenerator(db.propertyExitRules.assetId, db.assets.id));
+
+  $$AssetsTableProcessedTableManager? get assetId {
+    if ($_item.assetId == null) return null;
+    final manager = $$AssetsTableTableManager($_db, $_db.assets)
+        .filter((f) => f.id($_item.assetId!));
+    final item = $_typedResult.readTableOrNull(_assetIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$PropertyExitRulesTableFilterComposer
+    extends Composer<_$AppDatabase, $PropertyExitRulesTable> {
+  $$PropertyExitRulesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get ruleType => $composableBuilder(
+      column: $table.ruleType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get thresholdValue => $composableBuilder(
+      column: $table.thresholdValue,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastCheckedAt => $composableBuilder(
+      column: $table.lastCheckedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isTriggered => $composableBuilder(
+      column: $table.isTriggered, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$AssetsTableFilterComposer get assetId {
+    final $$AssetsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.assetId,
+        referencedTable: $db.assets,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$AssetsTableFilterComposer(
+              $db: $db,
+              $table: $db.assets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$PropertyExitRulesTableOrderingComposer
+    extends Composer<_$AppDatabase, $PropertyExitRulesTable> {
+  $$PropertyExitRulesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get ruleType => $composableBuilder(
+      column: $table.ruleType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get thresholdValue => $composableBuilder(
+      column: $table.thresholdValue,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastCheckedAt => $composableBuilder(
+      column: $table.lastCheckedAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isTriggered => $composableBuilder(
+      column: $table.isTriggered, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  $$AssetsTableOrderingComposer get assetId {
+    final $$AssetsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.assetId,
+        referencedTable: $db.assets,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$AssetsTableOrderingComposer(
+              $db: $db,
+              $table: $db.assets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$PropertyExitRulesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PropertyExitRulesTable> {
+  $$PropertyExitRulesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get ruleType =>
+      $composableBuilder(column: $table.ruleType, builder: (column) => column);
+
+  GeneratedColumn<double> get thresholdValue => $composableBuilder(
+      column: $table.thresholdValue, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastCheckedAt => $composableBuilder(
+      column: $table.lastCheckedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get isTriggered => $composableBuilder(
+      column: $table.isTriggered, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$AssetsTableAnnotationComposer get assetId {
+    final $$AssetsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.assetId,
+        referencedTable: $db.assets,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$AssetsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.assets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$PropertyExitRulesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $PropertyExitRulesTable,
+    PropertyExitRule,
+    $$PropertyExitRulesTableFilterComposer,
+    $$PropertyExitRulesTableOrderingComposer,
+    $$PropertyExitRulesTableAnnotationComposer,
+    $$PropertyExitRulesTableCreateCompanionBuilder,
+    $$PropertyExitRulesTableUpdateCompanionBuilder,
+    (PropertyExitRule, $$PropertyExitRulesTableReferences),
+    PropertyExitRule,
+    PrefetchHooks Function({bool assetId})> {
+  $$PropertyExitRulesTableTableManager(
+      _$AppDatabase db, $PropertyExitRulesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PropertyExitRulesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PropertyExitRulesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PropertyExitRulesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> assetId = const Value.absent(),
+            Value<String> ruleType = const Value.absent(),
+            Value<double> thresholdValue = const Value.absent(),
+            Value<DateTime?> lastCheckedAt = const Value.absent(),
+            Value<bool> isTriggered = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              PropertyExitRulesCompanion(
+            id: id,
+            assetId: assetId,
+            ruleType: ruleType,
+            thresholdValue: thresholdValue,
+            lastCheckedAt: lastCheckedAt,
+            isTriggered: isTriggered,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String assetId,
+            required String ruleType,
+            required double thresholdValue,
+            Value<DateTime?> lastCheckedAt = const Value.absent(),
+            Value<bool> isTriggered = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              PropertyExitRulesCompanion.insert(
+            id: id,
+            assetId: assetId,
+            ruleType: ruleType,
+            thresholdValue: thresholdValue,
+            lastCheckedAt: lastCheckedAt,
+            isTriggered: isTriggered,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$PropertyExitRulesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({assetId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (assetId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.assetId,
+                    referencedTable:
+                        $$PropertyExitRulesTableReferences._assetIdTable(db),
+                    referencedColumn:
+                        $$PropertyExitRulesTableReferences._assetIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$PropertyExitRulesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $PropertyExitRulesTable,
+    PropertyExitRule,
+    $$PropertyExitRulesTableFilterComposer,
+    $$PropertyExitRulesTableOrderingComposer,
+    $$PropertyExitRulesTableAnnotationComposer,
+    $$PropertyExitRulesTableCreateCompanionBuilder,
+    $$PropertyExitRulesTableUpdateCompanionBuilder,
+    (PropertyExitRule, $$PropertyExitRulesTableReferences),
+    PropertyExitRule,
+    PrefetchHooks Function({bool assetId})>;
+typedef $$FinancialInsightsTableCreateCompanionBuilder
+    = FinancialInsightsCompanion Function({
+  required String id,
+  required String type,
+  required String message,
+  required String severity,
+  Value<DateTime> generatedAt,
+  Value<bool> isDismissed,
+  Value<int> rowid,
+});
+typedef $$FinancialInsightsTableUpdateCompanionBuilder
+    = FinancialInsightsCompanion Function({
+  Value<String> id,
+  Value<String> type,
+  Value<String> message,
+  Value<String> severity,
+  Value<DateTime> generatedAt,
+  Value<bool> isDismissed,
+  Value<int> rowid,
+});
+
+class $$FinancialInsightsTableFilterComposer
+    extends Composer<_$AppDatabase, $FinancialInsightsTable> {
+  $$FinancialInsightsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get message => $composableBuilder(
+      column: $table.message, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get severity => $composableBuilder(
+      column: $table.severity, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get generatedAt => $composableBuilder(
+      column: $table.generatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isDismissed => $composableBuilder(
+      column: $table.isDismissed, builder: (column) => ColumnFilters(column));
+}
+
+class $$FinancialInsightsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FinancialInsightsTable> {
+  $$FinancialInsightsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get message => $composableBuilder(
+      column: $table.message, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get severity => $composableBuilder(
+      column: $table.severity, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get generatedAt => $composableBuilder(
+      column: $table.generatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isDismissed => $composableBuilder(
+      column: $table.isDismissed, builder: (column) => ColumnOrderings(column));
+}
+
+class $$FinancialInsightsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FinancialInsightsTable> {
+  $$FinancialInsightsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get message =>
+      $composableBuilder(column: $table.message, builder: (column) => column);
+
+  GeneratedColumn<String> get severity =>
+      $composableBuilder(column: $table.severity, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get generatedAt => $composableBuilder(
+      column: $table.generatedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDismissed => $composableBuilder(
+      column: $table.isDismissed, builder: (column) => column);
+}
+
+class $$FinancialInsightsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $FinancialInsightsTable,
+    FinancialInsight,
+    $$FinancialInsightsTableFilterComposer,
+    $$FinancialInsightsTableOrderingComposer,
+    $$FinancialInsightsTableAnnotationComposer,
+    $$FinancialInsightsTableCreateCompanionBuilder,
+    $$FinancialInsightsTableUpdateCompanionBuilder,
+    (
+      FinancialInsight,
+      BaseReferences<_$AppDatabase, $FinancialInsightsTable, FinancialInsight>
+    ),
+    FinancialInsight,
+    PrefetchHooks Function()> {
+  $$FinancialInsightsTableTableManager(
+      _$AppDatabase db, $FinancialInsightsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FinancialInsightsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FinancialInsightsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FinancialInsightsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> type = const Value.absent(),
+            Value<String> message = const Value.absent(),
+            Value<String> severity = const Value.absent(),
+            Value<DateTime> generatedAt = const Value.absent(),
+            Value<bool> isDismissed = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              FinancialInsightsCompanion(
+            id: id,
+            type: type,
+            message: message,
+            severity: severity,
+            generatedAt: generatedAt,
+            isDismissed: isDismissed,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String type,
+            required String message,
+            required String severity,
+            Value<DateTime> generatedAt = const Value.absent(),
+            Value<bool> isDismissed = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              FinancialInsightsCompanion.insert(
+            id: id,
+            type: type,
+            message: message,
+            severity: severity,
+            generatedAt: generatedAt,
+            isDismissed: isDismissed,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$FinancialInsightsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $FinancialInsightsTable,
+    FinancialInsight,
+    $$FinancialInsightsTableFilterComposer,
+    $$FinancialInsightsTableOrderingComposer,
+    $$FinancialInsightsTableAnnotationComposer,
+    $$FinancialInsightsTableCreateCompanionBuilder,
+    $$FinancialInsightsTableUpdateCompanionBuilder,
+    (
+      FinancialInsight,
+      BaseReferences<_$AppDatabase, $FinancialInsightsTable, FinancialInsight>
+    ),
+    FinancialInsight,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -14707,4 +16049,8 @@ class $AppDatabaseManager {
       $$PropertyExpensesTableTableManager(_db, _db.propertyExpenses);
   $$RentalIncomeTableTableManager get rentalIncome =>
       $$RentalIncomeTableTableManager(_db, _db.rentalIncome);
+  $$PropertyExitRulesTableTableManager get propertyExitRules =>
+      $$PropertyExitRulesTableTableManager(_db, _db.propertyExitRules);
+  $$FinancialInsightsTableTableManager get financialInsights =>
+      $$FinancialInsightsTableTableManager(_db, _db.financialInsights);
 }

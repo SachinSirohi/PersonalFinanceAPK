@@ -524,6 +524,36 @@ class AppRepository {
       'netIncome': income - expenses,
     };
   }
+
+  /// Get total income for a specific year
+  Future<double> getTotalIncomeByYear(int year) async {
+    final start = DateTime(year, 1, 1);
+    final end = DateTime(year, 12, 31);
+    
+    final result = await (_db.selectOnly(_db.transactions)
+      ..addColumns([_db.transactions.amountBase.sum()])
+      ..where(_db.transactions.transactionDate.isBetweenValues(start, end))
+      ..where(_db.transactions.type.equals('income')))
+      .map((row) => row.read(_db.transactions.amountBase.sum()))
+      .getSingle();
+      
+    return result ?? 0.0;
+  }
+
+  /// Get total expenses for a specific year
+  Future<double> getTotalExpensesByYear(int year) async {
+    final start = DateTime(year, 1, 1);
+    final end = DateTime(year, 12, 31);
+    
+    final result = await (_db.selectOnly(_db.transactions)
+      ..addColumns([_db.transactions.amountBase.sum()])
+      ..where(_db.transactions.transactionDate.isBetweenValues(start, end))
+      ..where(_db.transactions.type.equals('expense')))
+      .map((row) => row.read(_db.transactions.amountBase.sum()))
+      .getSingle();
+      
+    return result?.abs() ?? 0.0;
+  }
   // ═══════════════════════════════════════════════════════════════════════════
   // STATEMENT AUTOMATION
   // ═══════════════════════════════════════════════════════════════════════════
@@ -574,4 +604,47 @@ class AppRepository {
     
   Future<void> clearCompletedStatementQueue() =>
     (_db.delete(_db.statementQueue)..where((t) => t.status.equals('completed'))).go();
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PROPERTY EXIT RULES
+  // ═══════════════════════════════════════════════════════════════════════════
+  
+  Future<List<PropertyExitRule>> getAllExitRules() => _db.select(_db.propertyExitRules).get();
+  
+  Future<List<PropertyExitRule>> getExitRulesForAsset(String assetId) =>
+    (_db.select(_db.propertyExitRules)..where((r) => r.assetId.equals(assetId))).get();
+    
+  Future<int> insertExitRule(PropertyExitRulesCompanion rule) =>
+    _db.into(_db.propertyExitRules).insert(rule);
+    
+  Future<void> updateExitRule(String id, PropertyExitRulesCompanion rule) =>
+    (_db.update(_db.propertyExitRules)..where((r) => r.id.equals(id))).write(rule);
+    
+  Future<void> deleteExitRule(String id) =>
+    (_db.delete(_db.propertyExitRules)..where((r) => r.id.equals(id))).go();
+    
+  Stream<List<PropertyExitRule>> watchExitRulesForAsset(String assetId) =>
+    (_db.select(_db.propertyExitRules)..where((r) => r.assetId.equals(assetId))).watch();
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FINANCIAL INSIGHTS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Future<List<FinancialInsight>> getAllInsights() =>
+    (_db.select(_db.financialInsights)..orderBy([(t) => OrderingTerm(expression: t.generatedAt, mode: OrderingMode.desc)])).get();
+    
+  Future<List<FinancialInsight>> getActiveInsights() =>
+    (_db.select(_db.financialInsights)
+      ..where((t) => t.isDismissed.equals(false))
+      ..orderBy([(t) => OrderingTerm(expression: t.generatedAt, mode: OrderingMode.desc)]))
+      .get();
+      
+  Future<void> insertInsight(FinancialInsightsCompanion insight) =>
+    _db.into(_db.financialInsights).insert(insight);
+    
+  Future<void> dismissInsight(String id) =>
+    (_db.update(_db.financialInsights)..where((t) => t.id.equals(id))).write(const FinancialInsightsCompanion(isDismissed: Value(true)));
+    
+  Future<void> deleteInsight(String id) =>
+    (_db.delete(_db.financialInsights)..where((t) => t.id.equals(id))).go();
 }

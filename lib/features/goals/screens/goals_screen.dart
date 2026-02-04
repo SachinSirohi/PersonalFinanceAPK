@@ -28,19 +28,34 @@ class _GoalsScreenState extends State<GoalsScreen> {
   }
   
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
   
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
-    final goals = await _repo!.getAllGoals();
-    
-    setState(() {
-      _goals = goals;
-      _isLoading = false;
-    });
+    try {
+      final goals = await _repo!.getAllGoals();
+      
+      if (!mounted) return;
+      setState(() {
+        _goals = goals;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override

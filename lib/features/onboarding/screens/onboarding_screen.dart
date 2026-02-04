@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wealth_orbit/data/services/secure_vault.dart';
-import 'package:wealth_orbit/data/services/gemini_service.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:permission_handler/permission_handler.dart';
+import '../../../data/services/secure_vault.dart';
+import '../../../data/services/gemini_service.dart';
+import '../../../data/services/imap_service.dart';
+import '../../dashboard/screens/dashboard_screen.dart';
+import 'statement_discovery_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -23,6 +27,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _isValidatingKey = false;
   bool _keyValidated = false;
   String? _keyError;
+
+  // Permission states
+  bool _gmailPermissionGranted = false;
+  bool _notificationPermissionGranted = false;
 
   final List<String> _currencies = ['AED', 'USD', 'INR', 'EUR', 'GBP'];
 
@@ -384,7 +392,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ? const Icon(CupertinoIcons.checkmark_circle_fill, color: Colors.green)
                     : null,
               ),
-              obscureText: true,
+              obscureText: false, // Changed from true to allow viewing API key
             ),
             
             const SizedBox(height: 16),
@@ -516,12 +524,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           // Permission cards
           _buildPermissionCard(
             icon: CupertinoIcons.mail,
-            title: 'Gmail Access',
-            description: 'Read bank statements from your email',
-            isGranted: false,
+            title: 'Email Access',
+            description: 'Configure email for auto-sync statements',
+            isGranted: _gmailPermissionGranted,
             onTap: () {
-              // TODO: Implement Gmail sign-in
               HapticFeedback.mediumImpact();
+              _showEmailConfigSheet();
             },
           ).animate(delay: 300.ms).fadeIn().slideX(begin: 0.1),
           
@@ -531,10 +539,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             icon: CupertinoIcons.bell,
             title: 'Notifications',
             description: 'Get alerts for new statements and budget warnings',
-            isGranted: false,
-            onTap: () {
-              // TODO: Request notification permission
+            isGranted: _notificationPermissionGranted,
+            onTap: () async {
               HapticFeedback.mediumImpact();
+              // Request actual notification permission
+              final status = await Permission.notification.request();
+              setState(() {
+                _notificationPermissionGranted = status.isGranted;
+              });
+              
+              if (_notificationPermissionGranted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Notifications enabled! You will receive budget alerts.'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else if (status.isPermanentlyDenied) {
+                openAppSettings();
+              }
             },
           ).animate(delay: 400.ms).fadeIn().slideX(begin: 0.1),
           
@@ -579,6 +602,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     required VoidCallback onTap,
   }) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque, // Ensures clicks work everywhere on the card
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -661,6 +685,222 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  void _showEmailConfigSheet() {
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+    String provider = 'Gmail';
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          decoration: const BoxDecoration(
+            color: Color(0xFF1A2744),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Drag handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                Text(
+                  'Email Configuration',
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Connect your email to auto-sync bank statements',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.white60,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                
+                // Provider dropdown
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0D1B2A),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: provider,
+                      isExpanded: true,
+                      dropdownColor: const Color(0xFF1A2744),
+                      style: GoogleFonts.poppins(color: Colors.white),
+                      items: ['Gmail', 'Outlook', 'Yahoo'].map((p) {
+                        return DropdownMenuItem(value: p, child: Text(p));
+                      }).toList(),
+                      onChanged: (val) => setSheetState(() => provider = val!),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Email field
+                TextField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  style: GoogleFonts.poppins(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Email Address',
+                    hintText: 'your.email@gmail.com',
+                    hintStyle: GoogleFonts.poppins(color: Colors.white30),
+                    labelStyle: GoogleFonts.poppins(color: Colors.white54),
+                    filled: true,
+                    fillColor: const Color(0xFF0D1B2A),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    prefixIcon: const Icon(CupertinoIcons.mail, color: Color(0xFFCFB53B)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // App password field
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  style: GoogleFonts.poppins(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'App Password',
+                    hintText: '16-character password',
+                    hintStyle: GoogleFonts.poppins(color: Colors.white30),
+                    labelStyle: GoogleFonts.poppins(color: Colors.white54),
+                    filled: true,
+                    fillColor: const Color(0xFF0D1B2A),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    prefixIcon: const Icon(CupertinoIcons.lock, color: Color(0xFFCFB53B)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Help text
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCFB53B).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFCFB53B).withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(CupertinoIcons.info_circle, color: Color(0xFFCFB53B), size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Create app password at:\nmyaccount.google.com/apppasswords',
+                          style: GoogleFonts.poppins(fontSize: 11, color: Colors.white70),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const Spacer(),
+                
+                // Save button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final email = emailController.text.trim();
+                      final password = passwordController.text.trim();
+                      
+                      if (email.isEmpty || password.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please fill all fields')),
+                        );
+                        return;
+                      }
+                      
+                      // Show loading state
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Verifying credentials...')),
+                      );
+                      
+                      // Verify via IMAP
+                      final imap = ImapService();
+                      // Temporarily save to checking
+                      await SecureVault.setEmailCredentials(email, password, provider);
+                      
+                      final success = await imap.connect();
+                      
+                      if (success) {
+                        await imap.disconnect();
+                        if (mounted) {
+                          Navigator.pop(context); // Close sheet
+                          // Navigate to statement discovery
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const StatementDiscoveryScreen()),
+                          );
+                        }
+                      } else {
+                        // Failed - clear unsafe creds? Or let user retry?
+                        // For now just warn
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('❌ Connection failed. Check email/password.'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFCFB53B),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Save Configuration',
+                      style: GoogleFonts.poppins(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _nextPage() {
     if (_currentPage < 3) {
       _pageController.nextPage(
@@ -683,14 +923,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
     
     try {
-      final isValid = await GeminiService.validateApiKey(key);
+      // Returns null if valid, or error message string if invalid
+      final errorMsg = await GeminiService.validateApiKey(key);
       setState(() {
         _isValidatingKey = false;
-        if (isValid) {
+        if (errorMsg == null) {
           _keyValidated = true;
           _keyError = null;
         } else {
-          _keyError = 'Invalid API key. Please check and try again.';
+          _keyError = errorMsg;
         }
       });
     } catch (e) {

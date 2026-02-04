@@ -41,8 +41,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
   
   Future<void> _loadData() async {
@@ -81,6 +88,8 @@ class _HomeScreenState extends State<HomeScreen> {
         allocation[asset.type] = (allocation[asset.type] ?? 0) + asset.currentValue;
       }
       
+      
+      if (!mounted) return;
       setState(() {
         _netWorth = netWorth;
         _totalAssets = totalAssets;
@@ -96,7 +105,9 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

@@ -30,23 +30,40 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
   
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
   
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
-    final transactions = await _repo!.getAllTransactions();
-    final categories = await _repo!.getAllCategories();
-    final accounts = await _repo!.getAllAccounts();
-    
-    setState(() {
-      _transactions = transactions;
-      _categories = categories;
-      _accounts = accounts;
-      _isLoading = false;
-    });
+    try {
+      final transactions = await _repo!.getAllTransactions();
+      if (!mounted) return;
+      final categories = await _repo!.getAllCategories();
+      if (!mounted) return;
+      final accounts = await _repo!.getAllAccounts();
+      if (!mounted) return;
+      
+      setState(() {
+        _transactions = transactions;
+        _categories = categories;
+        _accounts = accounts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
   
   List<Transaction> get _filteredTransactions {

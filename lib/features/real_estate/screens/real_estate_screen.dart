@@ -9,6 +9,7 @@ import '../../../data/database/database.dart';
 import '../../../data/repositories/app_repository.dart';
 import '../../../core/utils/financial_calculations.dart';
 import '../widgets/deal_analyzer_sheet.dart';
+import '../widgets/exit_strategy_sheet.dart';
 
 class RealEstateScreen extends StatefulWidget {
   const RealEstateScreen({super.key});
@@ -33,47 +34,64 @@ class _RealEstateScreenState extends State<RealEstateScreen> {
   }
   
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
   
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
-    final allAssets = await _repo!.getAllAssets();
-    final properties = allAssets.where((a) => a.type == 'real_estate').toList();
-    final total = properties.fold(0.0, (sum, p) => sum + p.currentValue);
-    
-    // Calculate rental income from transactions
-    final now = DateTime.now();
-    final transactions = await _repo!.getTransactionsByDateRange(
-      DateTime(now.year, now.month - 12, 1), now);
-    final rentalIncome = transactions
-        .where((t) => t.type == 'income' && t.description.toLowerCase().contains('rent'))
-        .fold(0.0, (sum, t) => sum + t.amountBase);
-    
-    // Load property-specific rental income and expenses
-    final propertyRentalIncomeMap = <String, double>{};
-    final propertyExpensesMap = <String, double>{};
-    
-    for (final property in properties) {
-      // Rental income from RentalIncome table
-      final annualRent = await _repo!.getTotalRentalIncome(property.id, year: now.year);
-      propertyRentalIncomeMap[property.id] = annualRent;
+    try {
+      final allAssets = await _repo!.getAllAssets();
+      if (!mounted) return;
+      final properties = allAssets.where((a) => a.type == 'real_estate').toList();
+      final total = properties.fold(0.0, (sum, p) => sum + p.currentValue);
       
-      // Property expenses
-      final annualExpenses = await _repo!.getTotalPropertyExpenses(property.id);
-      propertyExpensesMap[property.id] = annualExpenses;
+      // Calculate rental income from transactions
+      final now = DateTime.now();
+      final transactions = await _repo!.getTransactionsByDateRange(
+        DateTime(now.year, now.month - 12, 1), now);
+      if (!mounted) return;
+      final rentalIncome = transactions
+          .where((t) => t.type == 'income' && t.description.toLowerCase().contains('rent'))
+          .fold(0.0, (sum, t) => sum + t.amountBase);
+      
+      // Load property-specific rental income and expenses
+      final propertyRentalIncomeMap = <String, double>{};
+      final propertyExpensesMap = <String, double>{};
+      
+      // Calculate ROI for each property
+      for (final property in properties) {
+        final propertyTransactions = transactions.where((t) => t.description.contains(property.name));
+        final income = propertyTransactions.where((t) => t.type == 'income').fold(0.0, (sum, t) => sum + t.amountBase);
+        final expenses = propertyTransactions.where((t) => t.type == 'expense').fold(0.0, (sum, t) => sum + t.amountBase);
+        
+        propertyRentalIncomeMap[property.id] = income;
+        propertyExpensesMap[property.id] = expenses;
+      }
+      
+      if (!mounted) return;
+      setState(() {
+        _properties = properties;
+        _totalValue = total;
+        _totalRentalIncome = rentalIncome;
+        _propertyRentalIncome = propertyRentalIncomeMap;
+        _propertyExpenses = propertyExpensesMap;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
-    
-    setState(() {
-      _properties = properties;
-      _totalValue = total;
-      _totalRentalIncome = rentalIncome / 12; // Monthly average
-      _propertyRentalIncome = propertyRentalIncomeMap;
-      _propertyExpenses = propertyExpensesMap;
-      _isLoading = false;
-    });
   }
 
   @override
@@ -432,6 +450,24 @@ class _RealEstateScreenState extends State<RealEstateScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 12),
+                    // Exit Strategy Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showExitStrategySheet(property);
+                        },
+                        icon: const Icon(CupertinoIcons.flag_fill, color: Color(0xFFE53935)),
+                        label: Text('Exit Strategy & Alerts', style: GoogleFonts.poppins(color: const Color(0xFFE53935), fontWeight: FontWeight.w600)),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFE53935)),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -677,6 +713,23 @@ class _RealEstateScreenState extends State<RealEstateScreen> {
         currentValue: property.currentValue,
         currency: property.currencyCode,
         geography: property.geography ?? 'UAE',
+      ),
+    );
+  }
+
+  void _showExitStrategySheet(Asset property) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        builder: (context, scrollController) => ExitStrategySheet(
+          asset: property,
+          scrollController: scrollController,
+        ),
       ),
     );
   }

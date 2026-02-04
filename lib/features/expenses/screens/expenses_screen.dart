@@ -20,6 +20,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   AppRepository? _repo;
   List<Budget> _budgets = [];
   List<Category> _categories = [];
+  List<Account> _accounts = [];
   Map<String, double> _categorySpending = {};
   List<Map<String, dynamic>> _budgetAlerts = [];
   bool _isLoading = true;
@@ -34,36 +35,59 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   }
   
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
   
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
-    final budgets = await _repo!.getAllBudgets();
-    final categories = await _repo!.getAllCategories();
-    
-    // Calculate spending per category for selected month
-    final startOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
-    final endOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0, 23, 59, 59);
-    final expensesByCategory = await _repo!.getExpensesByCategory(startOfMonth, endOfMonth);
-    
-    final totalBudget = budgets.fold(0.0, (sum, b) => sum + b.limitAmount);
-    final totalSpent = expensesByCategory.values.fold(0.0, (sum, v) => sum + v);
-    
-    // Check budget thresholds
-    final alerts = await _repo!.checkBudgetThresholds();
-    
-    setState(() {
-      _budgets = budgets;
-      _categories = categories;
-      _categorySpending = expensesByCategory;
-      _totalBudget = totalBudget;
-      _totalSpent = totalSpent;
-      _budgetAlerts = alerts;
-      _isLoading = false;
-    });
+    try {
+      final budgets = await _repo!.getAllBudgets();
+      if (!mounted) return;
+      
+      final categories = await _repo!.getAllCategories();
+      if (!mounted) return;
+      
+      final accounts = await _repo!.getAllAccounts();
+      if (!mounted) return;
+      
+      // Calculate spending per category for selected month
+      final startOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
+      final endOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0, 23, 59, 59);
+      final expensesByCategory = await _repo!.getExpensesByCategory(startOfMonth, endOfMonth);
+      if (!mounted) return;
+      
+      final totalBudget = budgets.fold(0.0, (sum, b) => sum + b.limitAmount);
+      final totalSpent = expensesByCategory.values.fold(0.0, (sum, v) => sum + v);
+      
+      // Check budget thresholds
+      final alerts = await _repo!.checkBudgetThresholds();
+      if (!mounted) return;
+      
+      setState(() {
+        _budgets = budgets;
+        _categories = categories;
+        _accounts = accounts;
+        _categorySpending = expensesByCategory;
+        _totalBudget = totalBudget;
+        _totalSpent = totalSpent;
+        _budgetAlerts = alerts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -87,11 +111,28 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             _buildBudgetList(),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddBudgetSheet(),
-        backgroundColor: const Color(0xFFCFB53B),
-        icon: const Icon(CupertinoIcons.add, color: Colors.black),
-        label: Text('Set Budget', style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.w600)),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+             FloatingActionButton.extended(
+              heroTag: 'add_expense',
+              onPressed: () => _showAddTransactionSheet(), // We need to expose this method or duplicate logic
+              backgroundColor: const Color(0xFFE53935),
+              icon: const Icon(CupertinoIcons.minus_circle, color: Colors.white),
+              label: Text('Add Expense', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
+            ),
+            const SizedBox(width: 12),
+            FloatingActionButton.extended(
+              heroTag: 'set_budget',
+              onPressed: () => _showAddBudgetSheet(),
+              backgroundColor: const Color(0xFFCFB53B),
+              icon: const Icon(CupertinoIcons.slider_horizontal_3, color: Colors.black),
+              label: Text('Set Budget', style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
       ).animate().scale(delay: 300.ms),
     );
   }
@@ -557,6 +598,213 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                     },
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFCFB53B), padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                     child: Text('Set Budget', style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 16)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAddTransactionSheet() {
+    _showTransactionSheet(null);
+  }
+
+  void _showTransactionSheet(Transaction? existing) {
+    final isEditing = existing != null;
+    final descController = TextEditingController(text: existing?.description ?? '');
+    final amountController = TextEditingController(text: existing?.amountSource.toString() ?? '');
+    String type = existing?.type ?? 'expense';
+    String? selectedCategoryId = existing?.categoryId;
+    String? selectedAccountId = existing?.accountId;
+    DateTime selectedDate = existing?.transactionDate ?? DateTime.now();
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: const BoxDecoration(color: Color(0xFF1A2744), borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+          child: Column(
+            children: [
+              Container(margin: const EdgeInsets.only(top: 12), width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(isEditing ? 'Edit Transaction' : 'Add Transaction', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ],
+                ),
+              ),
+              // Type Toggle
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setSheetState(() => type = 'expense'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(color: type == 'expense' ? const Color(0xFFE53935) : const Color(0xFF0D1B2A), borderRadius: BorderRadius.circular(12)),
+                          child: Center(child: Text('Expense', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600))),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setSheetState(() => type = 'income'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(color: type == 'income' ? const Color(0xFF4CAF50) : const Color(0xFF0D1B2A), borderRadius: BorderRadius.circular(12)),
+                          child: Center(child: Text('Income', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600))),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Amount
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  controller: amountController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                  decoration: InputDecoration(
+                    hintText: '0.00',
+                    hintStyle: GoogleFonts.poppins(color: Colors.white24, fontSize: 32),
+                    border: InputBorder.none,
+                    prefixText: 'AED ',
+                    prefixStyle: GoogleFonts.poppins(color: Colors.white54, fontSize: 20),
+                  ),
+                ),
+              ),
+              const Divider(color: Color(0xFF2A3A5A)),
+              // Description
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  controller: descController,
+                  style: GoogleFonts.poppins(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Description',
+                    labelStyle: GoogleFonts.poppins(color: Colors.white54),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2A3A5A))),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFCFB53B))),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Category Dropdown
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(border: Border.all(color: const Color(0xFF2A3A5A)), borderRadius: BorderRadius.circular(12)),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: selectedCategoryId,
+                      hint: Text('Select Category', style: GoogleFonts.poppins(color: Colors.white54)),
+                      dropdownColor: const Color(0xFF1A2744),
+                      isExpanded: true,
+                      items: _categories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, style: GoogleFonts.poppins(color: Colors.white)))).toList(),
+                      onChanged: (val) => setSheetState(() => selectedCategoryId = val),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Account Dropdown
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(border: Border.all(color: const Color(0xFF2A3A5A)), borderRadius: BorderRadius.circular(12)),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: selectedAccountId,
+                      hint: Text('Select Account', style: GoogleFonts.poppins(color: Colors.white54)),
+                      dropdownColor: const Color(0xFF1A2744),
+                      isExpanded: true,
+                      items: _accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name, style: GoogleFonts.poppins(color: Colors.white)))).toList(),
+                      onChanged: (val) => setSheetState(() => selectedAccountId = val),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Date Picker
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: GestureDetector(
+                  onTap: () async {
+                    final date = await showDatePicker(context: context, initialDate: selectedDate, firstDate: DateTime(2020), lastDate: DateTime.now());
+                    if (date != null) setSheetState(() => selectedDate = date);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(border: Border.all(color: const Color(0xFF2A3A5A)), borderRadius: BorderRadius.circular(12)),
+                    child: Row(
+                      children: [
+                        const Icon(CupertinoIcons.calendar, color: Colors.white54),
+                        const SizedBox(width: 12),
+                        Text(DateFormat('MMM dd, yyyy').format(selectedDate), style: GoogleFonts.poppins(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const Spacer(),
+              // Save Button
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final amount = double.tryParse(amountController.text) ?? 0;
+                      if (amount <= 0 || descController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+                        return;
+                      }
+                      
+                      if (selectedAccountId == null && _accounts.isNotEmpty) {
+                        selectedAccountId = _accounts.first.id;
+                      }
+                      
+                      final transaction = TransactionsCompanion(
+                        id: isEditing ? Value(existing.id) : Value(DateTime.now().millisecondsSinceEpoch.toString()),
+                        description: Value(descController.text),
+                        amountSource: Value(amount),
+                        amountBase: Value(amount),
+                        currencyCode: const Value('AED'),
+                        type: Value(type),
+                        categoryId: Value(selectedCategoryId),
+                        accountId: Value(selectedAccountId ?? _accounts.firstOrNull?.id ?? 'default'),
+                        transactionDate: Value(selectedDate),
+                      );
+                      
+                      if (isEditing) {
+                        await _repo!.updateTransaction(existing.id, transaction);
+                      } else {
+                        await _repo!.insertTransaction(transaction);
+                      }
+                      
+                      if (mounted) Navigator.pop(context);
+                      _loadData();
+                      HapticFeedback.mediumImpact();
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFCFB53B), padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                    child: Text(isEditing ? 'Update' : 'Add Transaction', style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 16)),
                   ),
                 ),
               ),

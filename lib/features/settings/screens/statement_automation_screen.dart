@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:drift/drift.dart' show Value;
 import '../../../data/database/database.dart';
 import '../../../data/repositories/app_repository.dart';
+import '../../../data/services/secure_vault.dart';
+import '../../../data/services/imap_service.dart';
+import '../../onboarding/screens/onboarding_screen.dart';
 
 class StatementAutomationScreen extends StatefulWidget {
   const StatementAutomationScreen({super.key});
@@ -20,7 +22,7 @@ class _StatementAutomationScreenState extends State<StatementAutomationScreen> {
   List<StatementSource> _sources = [];
   List<StatementQueueData> _queue = [];
   bool _isLoading = true;
-  bool _isGmailConnected = false; // Mock for now, would check secure storage
+  bool _isGmailConnected = false;
   DateTime? _lastSync;
 
   @override
@@ -30,23 +32,41 @@ class _StatementAutomationScreenState extends State<StatementAutomationScreen> {
   }
 
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
-    final sources = await _repo!.getAllStatementSources();
-    final queue = await _repo!.getPendingStatementQueue(); // Or all if needed
     
-    // In a real app, check Google Sign-In status here
-    // _isGmailConnected = await GoogleSignIn().isSignedIn();
-    
-    setState(() {
-      _sources = sources;
-      _queue = queue;
-      _isLoading = false;
-    });
+    try {
+      final sources = await _repo!.getAllStatementSources();
+      if (!mounted) return;
+      final queue = await _repo!.getPendingStatementQueue();
+      if (!mounted) return;
+      
+      final hasCreds = await SecureVault.hasEmailCredentials();
+      
+      if (!mounted) return;
+      setState(() {
+        _sources = sources;
+        _queue = queue;
+        _isGmailConnected = hasCreds;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -74,7 +94,7 @@ class _StatementAutomationScreenState extends State<StatementAutomationScreen> {
                    _buildQueueSection(),
                    const SizedBox(height: 24),
                    _buildSourcesSection(),
-                   const SizedBox(height: 100), // Bottom padding
+                   const SizedBox(height: 100),
                 ],
               ),
             ),
@@ -136,42 +156,20 @@ class _StatementAutomationScreenState extends State<StatementAutomationScreen> {
               Switch(
                 value: _isGmailConnected,
                 onChanged: (val) {
-                  setState(() => _isGmailConnected = val);
-                  if (val) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Connected to Gmail')));
-                  }
+                  _showEmailConfigSheet();
                 },
                 activeColor: Colors.white,
-                activeTrackColor: Colors.white.withOpacity(0.4),
+                activeTrackColor: Colors.white.withOpacity(0.3),
               ),
             ],
           ),
           if (_isGmailConnected) ...[
-            const SizedBox(height: 20),
-            Container(height: 1, color: Colors.white12),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Last Sync', style: GoogleFonts.inter(color: Colors.white54, fontSize: 11)),
-                    Text('Just now', style: GoogleFonts.inter(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.sync, size: 16),
-                  label: const Text('Sync Now'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF1565C0),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    textStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
+            const Divider(color: Colors.white24),
+            TextButton.icon(
+              onPressed: _syncEmails,
+              icon: const Icon(Icons.sync, color: Colors.white),
+              label: Text('Sync Now', style: GoogleFonts.poppins(color: Colors.white)),
             ),
           ],
         ],
@@ -264,6 +262,7 @@ class _StatementAutomationScreenState extends State<StatementAutomationScreen> {
       ],
     );
   }
+
   Widget _buildSourcesSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,13 +344,11 @@ class _StatementAutomationScreenState extends State<StatementAutomationScreen> {
       );
 
       if (result != null) {
-        // In a real app, we would process the file here
-        // For now, add a mock entry to queue
         await _repo!.insertStatementQueueItem(StatementQueueCompanion(
           id: Value(DateTime.now().millisecondsSinceEpoch.toString()),
           emailId: const Value('manual_upload'),
           subject: Value('Manual Upload: ${result.files.single.name}'),
-          status: const Value('pending'), // Changed to pending for realism
+          status: const Value('pending'),
           priority: const Value(100),
           emailDate: Value(DateTime.now()),
           queuedAt: Value(DateTime.now()),
@@ -442,5 +439,74 @@ class _StatementAutomationScreenState extends State<StatementAutomationScreen> {
         ),
       ),
     );
+  }
+  
+  void _showEmailConfigSheet() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+    ).then((_) => _loadData());
+  }
+
+  Future<void> _syncEmails() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('⏳ Connecting to email...')),
+    );
+    
+    final imap = ImapService();
+    try {
+      final connected = await imap.connect();
+      if (!connected) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('❌ Connection failed'), backgroundColor: Colors.red),
+          );
+        }
+        return;
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('🔍 Searching for statements...')),
+        );
+      }
+      
+      final sources = await _repo!.getAllStatementSources();
+      final dbSenders = sources.map((s) => s.senderEmail).toList();
+      
+      final senders = <String>[
+        ...dbSenders,
+        'statements@bank.com', 
+        'estatements@emiratesnbd.com', 
+        'service@paypal.com',
+        'no-reply@enbd.com', 
+        'alert@emiratesnbd.com'
+      ].toSet().toList();
+      
+      print('🔍 Searching emails from: $senders');
+      
+      final emails = await imap.searchStatementEmails(senders);
+      
+      if (mounted) {
+        if (emails.isEmpty) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No new statements found')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('✅ Found ${emails.length} emails. Processing...')),
+          );
+        }
+      }
+      
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('❌ Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      await imap.disconnect();
+    }
   }
 }

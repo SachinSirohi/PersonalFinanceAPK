@@ -35,39 +35,60 @@ class _NetWorthScreenState extends State<NetWorthScreen> {
   }
   
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
   
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
-    final netWorth = await _repo!.getNetWorth();
-    final totalAssets = await _repo!.getTotalAssetValue();
-    final totalAccounts = await _repo!.getTotalAccountBalance();
-    final liquidAssets = await _repo!.getLiquidAssetValue();
-    
-    final assets = await _repo!.getAllAssets();
-    final accounts = await _repo!.getAllAccounts();
-    
-    // Calculate breakdown by asset type
-    final breakdown = <String, double>{};
-    for (final asset in assets) {
-      breakdown[asset.type] = (breakdown[asset.type] ?? 0) + asset.currentValue;
+    try {
+      final netWorth = await _repo!.getNetWorth();
+      if (!mounted) return;
+      final totalAssets = await _repo!.getTotalAssetValue();
+      if (!mounted) return;
+      final totalAccounts = await _repo!.getTotalAccountBalance();
+      if (!mounted) return;
+      final liquidAssets = await _repo!.getLiquidAssetValue();
+      if (!mounted) return;
+      
+      final assets = await _repo!.getAllAssets();
+      if (!mounted) return;
+      final accounts = await _repo!.getAllAccounts();
+      if (!mounted) return;
+      
+      // Calculate breakdown by asset type
+      final breakdown = <String, double>{};
+      for (final asset in assets) {
+        breakdown[asset.type] = (breakdown[asset.type] ?? 0) + asset.currentValue;
+      }
+      // Add accounts to breakdown
+      breakdown['cash_accounts'] = totalAccounts;
+      
+      if (!mounted) return;
+      setState(() {
+        _netWorth = netWorth;
+        _totalAssets = totalAssets;
+        _totalAccounts = totalAccounts;
+        _liquidAssets = liquidAssets;
+        _assets = assets;
+        _accounts = accounts;
+        _assetBreakdown = breakdown;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
-    // Add accounts to breakdown
-    breakdown['cash_accounts'] = totalAccounts;
-    
-    setState(() {
-      _netWorth = netWorth;
-      _totalAssets = totalAssets;
-      _totalAccounts = totalAccounts;
-      _liquidAssets = liquidAssets;
-      _assets = assets;
-      _accounts = accounts;
-      _assetBreakdown = breakdown;
-      _isLoading = false;
-    });
   }
 
   @override

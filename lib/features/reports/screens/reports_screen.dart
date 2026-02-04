@@ -4,8 +4,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'annual_planning_screen.dart';
 import '../../../data/database/database.dart';
 import '../../../data/repositories/app_repository.dart';
+import '../../../data/services/pdf_report_service.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -41,8 +43,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
   
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
   
   Future<void> _loadData() async {
@@ -155,12 +164,119 @@ class _ReportsScreenState extends State<ReportsScreen> {
       backgroundColor: const Color(0xFF0A1628),
       title: Text('Financial Reports', style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
       actions: [
+        // PDF Export Menu
+        PopupMenuButton<String>(
+          icon: const Icon(CupertinoIcons.square_arrow_up, color: Color(0xFFCFB53B)),
+          tooltip: 'Export Report',
+          color: const Color(0xFF1A2744),
+          onSelected: (value) => _handleExport(value),
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 'summary',
+              child: Row(
+                children: [
+                  const Icon(CupertinoIcons.doc_chart, color: Colors.white54, size: 18),
+                  const SizedBox(width: 12),
+                  Text('Financial Summary', style: GoogleFonts.inter(color: Colors.white)),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'annual',
+              child: Row(
+                children: [
+                  const Icon(CupertinoIcons.calendar, color: Colors.white54, size: 18),
+                  const SizedBox(width: 12),
+                  Text('Annual Report ${DateTime.now().year}', style: GoogleFonts.inter(color: Colors.white)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        IconButton(
+          icon: const Icon(CupertinoIcons.doc_text_search, color: Colors.white54),
+          tooltip: 'Annual Plan',
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnualPlanningScreen())),
+        ),
         IconButton(
           icon: const Icon(CupertinoIcons.arrow_clockwise, color: Colors.white54),
           onPressed: _loadData,
         ),
       ],
     );
+  }
+  
+  Future<void> _handleExport(String type) async {
+    if (_repo == null) return;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2744),
+        content: Row(
+          children: [
+            const CircularProgressIndicator(color: Color(0xFFCFB53B)),
+            const SizedBox(width: 20),
+            Text('Generating PDF...', style: GoogleFonts.inter(color: Colors.white)),
+          ],
+        ),
+      ),
+    );
+    
+    try {
+      final pdfService = PdfReportService(_repo!);
+      final file = type == 'summary' 
+          ? await pdfService.generateFinancialSummaryReport()
+          : await pdfService.generateAnnualReport(DateTime.now().year);
+      
+      Navigator.pop(context); // Close loading dialog
+      
+      // Show success and share option
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        builder: (context) => Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const BoxDecoration(
+            color: Color(0xFF1A2744),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(CupertinoIcons.checkmark_circle_fill, color: Color(0xFF4CAF50), size: 48),
+              const SizedBox(height: 16),
+              Text('Report Generated!', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+              const SizedBox(height: 8),
+              Text(file.path.split('/').last, style: GoogleFonts.inter(fontSize: 12, color: Colors.white54)),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    pdfService.shareReport(file);
+                  },
+                  icon: const Icon(CupertinoIcons.share, color: Colors.black),
+                  label: Text('Share Report', style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.w600)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFCFB53B),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } catch (e) {
+      Navigator.pop(context); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate report: $e'), backgroundColor: Colors.red),
+      );
+    }
   }
 
   Widget _buildNetWorthCard() {

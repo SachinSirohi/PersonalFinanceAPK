@@ -31,25 +31,42 @@ class _SIPManagerScreenState extends State<SIPManagerScreen> {
   }
 
   Future<void> _initializeData() async {
-    _repo = await AppRepository.getInstance();
-    await _loadData();
+    try {
+      _repo = await AppRepository.getInstance();
+      if (!mounted) return;
+      await _loadData();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
-    final sips = await _repo!.getAllSipRecords();
-    final assets = await _repo!.getAllAssets();
-    final activeSips = sips.where((s) => s.isActive).toList();
-    final monthlyTotal = activeSips.fold(0.0, (sum, s) => sum + s.amount);
+    try {
+      final sips = await _repo!.getAllSipRecords();
+      if (!mounted) return;
+      final assets = await _repo!.getAllAssets();
+      if (!mounted) return;
+      final activeSips = sips.where((s) => s.isActive).toList();
+      final monthlyTotal = activeSips.fold(0.0, (sum, s) => sum + s.amount);
 
-    setState(() {
-      _sips = sips;
-      _assets = assets;
-      _totalMonthlySIP = monthlyTotal;
-      _totalAnnualSIP = monthlyTotal * 12;
-      _isLoading = false;
-    });
+      if (!mounted) return;
+      setState(() {
+        _sips = sips;
+        _assets = assets;
+        _totalMonthlySIP = monthlyTotal;
+        _totalAnnualSIP = monthlyTotal * 12;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
